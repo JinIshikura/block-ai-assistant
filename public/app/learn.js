@@ -366,7 +366,16 @@
     el.results.innerHTML = '<div class="jnote">課題の作品を読みこんでいます…</div>';
     try {
       await bridge('loadProject', { sb3: await getProject(ex.project) }, 40000);
-      for (const sp of Object.keys(ex.starter)) await applyCode(sp, ex.starter[sp]);
+      for (const sp of Object.keys(ex.starter)) {
+        try {
+          await applyCode(sp, ex.starter[sp]);
+        } catch (e) {
+          // 「エラーを直す」課題では、最初のコードがわざとまちがっている（ブロックにはしない）
+          if (sp !== ex.sprite || !ex.brokenStarter) throw e;
+          const cur = await bridge('getScripts', { sprite: sp });
+          await bridge('replaceScripts', { sprite: sp, removeTopIds: (cur.scripts || []).map((x) => x.topId), scripts: [] });
+        }
+      }
       el.results.innerHTML = '';
     } catch (e) {
       el.results.innerHTML = '';
@@ -552,6 +561,11 @@
     }
     if (x.kind === 'said') {
       return samples.some((s) => s.sprites[x.sprite] && String(s.sprites[x.sprite].say || '').includes(x.text));
+    }
+    if (x.kind === 'final') {
+      const last = samples[samples.length - 1];
+      const sp = last.sprites[x.sprite];
+      return !!sp && typeof sp[x.prop] === 'number' && compare(sp[x.prop], x.op || '==', x.value);
     }
     if (x.kind === 'visible') {
       const last = samples[samples.length - 1];

@@ -1,0 +1,50 @@
+const fs = require('fs');
+const { JSDOM } = require('jsdom');
+const E = '/home/claude/block-ai-assistant/extension/';
+const dom = new JSDOM('<!doctype html><body><div class="menu-bar_main-menu_x"><div class="menu-bar_menu-bar-item_a">チュートリアル</div><div class="menu-bar_menu-bar-item_b">ファイル</div></div></body>', { url: 'https://scratch.mit.edu/projects/9/editor', runScripts: 'outside-only', pretendToBeVisual: true });
+const w = dom.window;
+w.chrome = { runtime: { getManifest: () => ({ version: '0.11.0' }) } };
+w.fetch = async () => ({ ok: true, json: async () => ({ menu: { bar: '[class*="menu-bar_main-menu"]', item: '[class*="menu-bar_menu-bar-item"]', hide: ['チュートリアル'], buttons: [{ label: 'AIに聞く', view: 'ai' }, { label: 'コードで見る', view: 'code' }, { label: '学習', view: 'learn' }] } }) });
+const toPage = [];
+w.addEventListener('message', (ev) => { if (ev.data && ev.data.source === 'block-ai-cs') toPage.push(ev.data); });
+w.eval(fs.readFileSync(E + 'content.js', 'utf8'));
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.exitCode = 1; };
+(async () => {
+  await wait(800);
+  const btns = [...w.document.querySelectorAll('.block-ai-menu-btn')].map((b) => b.textContent);
+  ok(btns.join(',') === 'AIに聞く,コードで見る,学習', 'サーバーの設定どおりのボタン: ' + btns.join(','));
+  ok(w.document.querySelector('.menu-bar_menu-bar-item_a').style.display === 'none', '「チュートリアル」を隠す');
+  w.document.querySelectorAll('.block-ai-menu-btn')[1].click();
+  await wait(30);
+  const fr = w.document.querySelector('iframe');
+  ok(fr && fr.src === 'https://block-ai-assistant.pages.dev/app/' && fr.style.display === 'block', '押すとサーバーの画面を全画面で重ねる');
+  const sentToFrame = [];
+  fr.contentWindow.postMessage = (m, o) => sentToFrame.push({ m, o });
+  const fromFrame = (data, origin) => w.dispatchEvent(new w.MessageEvent('message', { data, origin: origin || 'https://block-ai-assistant.pages.dev', source: fr.contentWindow }));
+  fromFrame({ kind: 'ready' });
+  await wait(10);
+  ok(sentToFrame[0].m.kind === 'init' && sentToFrame[0].o === 'https://block-ai-assistant.pages.dev', 'ready で init を返す（相手はサーバーだけ）');
+  ok(sentToFrame.some((s) => s.m.kind === 'open' && s.m.view === 'code' && s.m.path === '/projects/9/editor'), '待っていた open を届ける');
+  // 取りつぎ
+  fromFrame({ kind: 'rpc', id: 'r1', method: 'getScripts', params: {} });
+  await wait(10);
+  const req = toPage.find((t) => t.method === 'getScripts');
+  ok(req && req.id === 'f_r1', 'サーバーの頼みをScratchの中へ取りつぐ');
+  w.dispatchEvent(new w.MessageEvent('message', { data: { source: 'block-ai-page', id: 'f_r1', result: { sprite: 'ネコ' } }, source: w }));
+  await wait(10);
+  ok(sentToFrame.some((s) => s.m.kind === 'rpc-result' && s.m.id === 'r1' && s.m.result.sprite === 'ネコ'), '返事をサーバーの画面へ返す');
+  // ちがうサイトからの頼みは無視
+  const before = toPage.length;
+  fromFrame({ kind: 'rpc', id: 'r2', method: 'deleteSprite', params: {} }, 'https://evil.example');
+  await wait(10);
+  ok(toPage.length === before, 'ちがうサイトからの頼みは取りつがない');
+  // 右クリックの「AIに聞く」
+  w.dispatchEvent(new w.MessageEvent('message', { data: { source: 'block-ai-page', event: 'askBlock', data: { blockId: 'b' } }, source: w }));
+  await wait(10);
+  ok(sentToFrame.some((s) => s.m.kind === 'event' && s.m.event === 'askBlock'), 'ブロックの右クリックをサーバーの画面へ知らせる');
+  fromFrame({ kind: 'close' });
+  await wait(10);
+  ok(fr.style.display === 'none', 'close で枠を隠す');
+  process.exit();
+})().catch((e) => { console.error('FAILED', e); process.exit(1); });

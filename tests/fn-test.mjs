@@ -1,0 +1,16 @@
+import { onRequestPost } from '/home/claude/block-ai-assistant/functions/api/claude.js';
+const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.exitCode = 1; };
+let sent = null;
+globalThis.fetch = async (url, opt) => { sent = { url, opt }; return new Response('{"ok":1}', { status: 200, headers: { 'content-type': 'application/json' } }); };
+const env = { ANTHROPIC_API_KEY: 'sk-ant-test', CLASS_CODE: 'abc' };
+const req = (h, body) => new Request('https://block-ai-assistant.pages.dev/api/claude', { method: 'POST', headers: Object.assign({ 'content-type': 'application/json' }, h), body: JSON.stringify(body || { messages: [{ role: 'user', content: 'hi' }], max_tokens: 999999, model: 'claude-opus-9' }) });
+let r = await onRequestPost({ request: req({ 'x-class-code': 'nope' }), env });
+ok(r.status === 401 && !sent, '教室コードがちがうと 401');
+r = await onRequestPost({ request: req({ 'x-class-code': 'abc', origin: 'https://evil.example' }), env });
+ok(r.status === 403 && !sent, 'ほかのサイトからは 403');
+r = await onRequestPost({ request: req({ 'x-class-code': 'abc' }), env: {} });
+ok(r.status === 503, 'キー未登録なら 503');
+r = await onRequestPost({ request: req({ 'x-class-code': 'abc', origin: 'https://block-ai-assistant.pages.dev' }), env });
+const b = JSON.parse(sent.opt.body);
+ok(r.status === 200 && sent.url === 'https://api.anthropic.com/v1/messages' && sent.opt.headers['x-api-key'] === 'sk-ant-test', '正しければAnthropicへ中継（キーはサーバーで付ける）');
+ok(b.model === 'claude-sonnet-5-5' && b.max_tokens === 16000, '許可外のモデル・大きすぎる max_tokens は直す');

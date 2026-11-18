@@ -1240,7 +1240,12 @@
   function parseExprFrom(ts, line, lang) {
     const p = new Parser(ts, line, lang);
     const e = p.expr();
-    if (!p.done()) throw new CodeError(line, '「' + p.peek().v + '」のあたりの書き方がおかしいです');
+    if (!p.done()) {
+      const t = p.peek();
+      // if や while の中で「=」を1つだけ書いたとき（比べるのは「==」）
+      if (t && t.t === 'op' && t.v === '=') throw new CodeError(line, '比べるときは「=」ではなく「==」を使ってね（「=」は変数に入れるときに使う）');
+      throw new CodeError(line, '「' + t.v + '」のあたりの書き方がおかしいです');
+    }
     return e;
   }
 
