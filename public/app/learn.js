@@ -357,6 +357,7 @@
     el.aiReply.textContent = '';
     updateAi();
     el.ta.value = ex.starter[ex.sprite] || '';
+    errLine = 0;
     paint();
     await prepare();
   }
@@ -414,8 +415,15 @@
   }
 
   // コード欄
+  let errLine = 0;
   function paint() {
-    el.hl.innerHTML = hlHtml(el.ta.value) + '\n';
+    let html = hlHtml(el.ta.value);
+    if (errLine) {
+      const ls = html.split('\n');
+      if (ls[errLine - 1] !== undefined) ls[errLine - 1] = '<span class="errline" style="display:inline-block;min-width:100%">' + (ls[errLine - 1] || ' ') + '</span>';
+      html = ls.join('\n');
+    }
+    el.hl.innerHTML = html + '\n';
     const n = el.ta.value.split('\n').length;
     let g = '';
     for (let k = 1; k <= n; k++) g += k + '\n';
@@ -427,7 +435,7 @@
     el.hl.scrollLeft = el.ta.scrollLeft;
     el.gutter.scrollTop = el.ta.scrollTop;
   }
-  el.ta.addEventListener('input', paint);
+  el.ta.addEventListener('input', () => { errLine = 0; paint(); });
   el.ta.addEventListener('scroll', syncScroll);
   el.ta.addEventListener('keydown', (e) => {
     if (e.isComposing || e.keyCode === 229) return;
@@ -472,6 +480,7 @@
   $('.reset').addEventListener('click', () => { if (!busy && ex) { el.ta.value = ex.starter[ex.sprite] || ''; paint(); el.results.innerHTML = ''; prepare(); } });
 
   function showCodeError(e) {
+    if (e.line) { errLine = e.line; paint(); }
     el.results.innerHTML = '';
     addResult(false, 'コードを読みこめなかった', e.message);
   }
@@ -597,6 +606,7 @@
       parsed = await applyCode(ex.sprite, el.ta.value);
     } catch (e) {
       addResult(false, 'コードを読みこめなかった', e.message);
+      if (e.line) { errLine = e.line; paint(); }
       lastResults.push({ ok: false, label: 'コードを読みこめなかった', why: e.message });
       return finish(false);
     }
