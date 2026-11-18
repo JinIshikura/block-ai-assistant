@@ -1968,6 +1968,114 @@
   // ---------------------------------------------------------------
   // メッセージ受付
   // ---------------------------------------------------------------
+  // ---------------------------------------------------------------
+  // 学習モード用：作品の読みこみ・状態を調べる・採点用に動かす
+  // ---------------------------------------------------------------
+  const sayMap = new Map();
+  let sayWatched = null;
+  function ensureSayWatch(vm) {
+    if (sayWatched === vm) return;
+    sayWatched = vm;
+    vm.runtime.on('SAY', (t, type, text) => { if (t && t.id) sayMap.set(t.id, text ? String(text) : ''); });
+  }
+  const round1 = (n) => Math.round(Number(n) * 10) / 10;
+  function stateOf(vm) {
+    const sprites = {};
+    const vars = {};
+    const lists = {};
+    vm.runtime.targets.filter((t) => t.isOriginal).forEach((t) => {
+      Object.values(t.variables || {}).forEach((v) => {
+        if (v.type === '') vars[v.name] = v.value;
+        else if (v.type === 'list' && v.name !== MEMO_NAME) lists[v.name] = Array.isArray(v.value) ? v.value.slice(0, 200) : [];
+      });
+      if (t.isStage) return;
+      const costumes = t.getCostumes ? t.getCostumes() : [];
+      sprites[t.getName()] = {
+        x: round1(t.x), y: round1(t.y), dir: round1(t.direction), size: Math.round(t.size),
+        visible: !!t.visible, costume: costumes[t.currentCostume] ? costumes[t.currentCostume].name : '',
+        say: (() => { try { const st = t.getCustomState && t.getCustomState('Scratch.looks'); return st && st.text ? String(st.text) : ''; } catch (e) { return sayMap.get(t.id) || ''; } })()
+      };
+    });
+    return { sprites, vars, lists };
+  }
+  function getState() {
+    const vm = vmOrThrow();
+    ensureSayWatch(vm);
+    return stateOf(vm);
+  }
+  function applyOp(vm, op) {
+    if (!op || typeof op !== 'object') return;
+    if (op.sprite) {
+      const t = vm.runtime.targets.find((x) => x.isOriginal && !x.isStage && x.getName() === op.sprite);
+      if (!t) return;
+      if (typeof op.x === 'number' || typeof op.y === 'number') t.setXY(typeof op.x === 'number' ? op.x : t.x, typeof op.y === 'number' ? op.y : t.y);
+      if (typeof op.visible === 'boolean') t.setVisible(op.visible);
+      if (op.follow) {
+        const o = vm.runtime.targets.find((x) => x.isOriginal && !x.isStage && x.getName() === op.follow);
+        if (o) t.setXY(o.x + (Number(op.dx) || 0), o.y + (Number(op.dy) || 0));
+      }
+    }
+    if (op.variable) {
+      vm.runtime.targets.filter((x) => x.isOriginal).forEach((x) => {
+        Object.values(x.variables || {}).forEach((v) => { if (v.type === '' && v.name === op.variable) v.value = op.value; });
+      });
+    }
+  }
+  async function runTest(p) {
+    const vm = vmOrThrow();
+    ensureSayWatch(vm);
+    const ms = Math.max(200, Math.min(15000, Number(p.ms) || 3000));
+    const sampleMs = Math.max(50, Math.min(1000, Number(p.sampleMs) || 100));
+    vm.stopAll();
+    sayMap.clear();
+    const timers = [];
+    const pressed = new Set();
+    if (p.flag !== false) vm.greenFlag();
+    (Array.isArray(p.setup) ? p.setup.slice(0, 30) : []).forEach((op) => {
+      const at = Math.max(0, Number(op.at) || 0);
+      if (op.every) timers.push(setTimeout(() => { timers.push(setInterval(() => applyOp(vm, op), Math.max(30, Number(op.every)))); }, at));
+      else timers.push(setTimeout(() => applyOp(vm, op), at));
+    });
+    (Array.isArray(p.keys) ? p.keys.slice(0, 30) : []).forEach((k) => {
+      const key = keyName(k.key);
+      const at = Math.max(0, Number(k.at) || 0);
+      const hold = Math.max(30, Math.min(5000, Number(k.hold) || 200));
+      timers.push(setTimeout(() => { pressed.add(key); vm.postIOData('keyboard', { key, isDown: true }); }, at));
+      timers.push(setTimeout(() => { pressed.delete(key); vm.postIOData('keyboard', { key, isDown: false }); }, at + hold));
+    });
+    const samples = [];
+    const start = Date.now();
+    await new Promise((resolve) => {
+      const tick = () => {
+        const t = Date.now() - start;
+        samples.push(Object.assign({ t }, stateOf(vm)));
+        if (t >= ms || samples.length >= 400) return resolve();
+        setTimeout(tick, sampleMs);
+      };
+      tick();
+    });
+    timers.forEach((id) => { clearTimeout(id); clearInterval(id); });
+    pressed.forEach((key) => vm.postIOData('keyboard', { key, isDown: false }));
+    if (p.stop !== false) vm.stopAll();
+    return { samples };
+  }
+  async function loadProject(p) {
+    const vm = vmOrThrow();
+    let input = null;
+    if (p.sb3 instanceof ArrayBuffer) input = p.sb3;
+    else if (p.sb3 && p.sb3.buffer instanceof ArrayBuffer) input = p.sb3.buffer;
+    else if (typeof p.json === 'string') input = p.json;
+    else if (p.json && typeof p.json === 'object') input = JSON.stringify(p.json);
+    if (!input) throw new Error('読みこむ作品がありません');
+    vm.stopAll();
+    await vm.loadProject(input);
+    const first = vm.runtime.targets.find((t) => t.isOriginal && !t.isStage);
+    if (first) vm.setEditingTarget(first.id);
+    try { vm.emitWorkspaceUpdate(); } catch (e) { /* noop */ }
+    sayMap.clear();
+    return { ok: true, sprites: vm.runtime.targets.filter((t) => t.isOriginal && !t.isStage).map((t) => t.getName()) };
+  }
+
   // 窓口の自己チェック：どの機能が使えるか（Scratchが更新されたときの確認用）
   function capabilities() {
     const SB = findScratchBlocks();
@@ -1975,7 +2083,8 @@
     try { vm = findVM(); } catch (e) { vm = null; }
     const proto = SB && SB.BlockSvg && SB.BlockSvg.prototype;
     return {
-      bridge: '0.11.0',
+      bridge: '0.12.0',
+      learn: true,
       vm: !!vm,
       blocks: !!SB,
       contextMenu: !!(proto && (typeof proto.generateContextMenu === 'function' || typeof proto.showContextMenu_ === 'function')),
@@ -1986,6 +2095,9 @@
 
   const METHODS = {
     capabilities,
+    getState,
+    runTest,
+    loadProject,
     status,
     getProjectDump,
     snapshot,

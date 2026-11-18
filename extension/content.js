@@ -1,4 +1,4 @@
-// ブロックAIアシスタント - つなぎ役（拡張機能）
+// ブロックAIアシスタント - つなぎ役（拡張機能） v0.12
 // ・Scratchの上のバーにボタンを出す（ボタンの名前や場所はサーバーの config.json で変えられる）
 // ・サーバーの画面を、Scratchのページの上に全画面の枠として重ねる
 // ・枠（サーバーの画面）からの頼みを、Scratchの中（page-bridge.js）に取りつぐ
@@ -22,8 +22,11 @@
       hide: ['チュートリアル', 'Tutorials', 'Debug', 'デバッグ', 'でばっぐ', 'ちゅーとりある'],
       buttons: [{ label: 'AIに聞く', view: 'ai' }, { label: 'コードで見る', view: 'code' }]
     },
-    editorReady: '.blocklyWorkspace'
+    editorReady: '.blocklyWorkspace',
+    learn: { baseProject: null, label: '学習', tabButtons: [{ label: '学習の画面', view: 'learn' }] }
   };
+  // 学習用のタブ（先生の土台作品を開いたタブ）かどうか
+  const LEARN_TAB = /(^|[#&])blockai=learn\b/.test(location.hash);
   let config = FALLBACK;
   fetch(APP_ORIGIN + '/config.json', { cache: 'no-store' })
     .then((r) => (r.ok ? r.json() : null))
@@ -47,13 +50,16 @@
       });
     } catch (e) { /* noop */ }
     if (bar.querySelector('.block-ai-menu-btn')) return;
-    (m.buttons || []).forEach((def) => {
+    const learn = Object.assign({}, FALLBACK.learn, config.learn || {});
+    let defs = LEARN_TAB ? (learn.tabButtons || []) : (m.buttons || []).slice();
+    if (!LEARN_TAB && /^\d+$/.test(String(learn.baseProject || ''))) defs.push({ label: learn.label || '学習', openLearn: true });
+    defs.forEach((def) => {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'block-ai-menu-btn';
       b.textContent = String(def.label || 'AI');
       b.style.cssText = BTN_CSS;
-      b.addEventListener('click', () => openApp(String(def.view || 'ai')));
+      b.addEventListener('click', () => (def.openLearn ? openLearnTab() : openApp(String(def.view || 'ai'))));
       bar.appendChild(b);
     });
   }
@@ -94,6 +100,28 @@
     isOpen = true;
     toFrame(Object.assign({ kind: 'open', view }, hostInfo()));
     setTimeout(() => { try { frame.focus(); } catch (e) { /* noop */ } }, 50);
+  }
+
+  // 学習は、先生の土台作品を別のタブで開いて行う（子どもの作品には何も読みこまない）
+  function openLearnTab() {
+    const learn = Object.assign({}, FALLBACK.learn, config.learn || {});
+    const id = String(learn.baseProject || '');
+    if (!/^\d+$/.test(id)) return;
+    window.open('https://scratch.mit.edu/projects/' + id + '/editor#blockai=learn', 'blockai-learn');
+  }
+
+  // 「ブロックで確かめる」：枠をいったん隠して、Scratchの画面を見せる
+  let peekBar = null;
+  function peek() {
+    if (frame) frame.style.display = 'none';
+    if (!peekBar) {
+      peekBar = document.createElement('button');
+      peekBar.type = 'button';
+      peekBar.textContent = '見るだけです　［学習の画面にもどる］';
+      peekBar.style.cssText = 'position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:2147483001;border:none;border-radius:999px;padding:12px 22px;background:#855CD6;color:#fff;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);font-family:inherit;';
+      peekBar.addEventListener('click', () => { peekBar.remove(); if (frame) frame.style.display = 'block'; toFrame({ kind: 'peek-end' }); });
+    }
+    document.documentElement.appendChild(peekBar);
   }
 
   function closeApp() {
@@ -147,6 +175,11 @@
         window.postMessage({ source: CS, id, method: d.method, params: d.params || {} }, location.origin);
       } else if (d.kind === 'close') {
         closeApp();
+      } else if (d.kind === 'peek') {
+        peek();
+      } else if (d.kind === 'closeTab') {
+        closeApp();
+        if (LEARN_TAB) { try { window.close(); } catch (e) { /* noop */ } }
       }
       return;
     }
@@ -174,4 +207,13 @@
     }
   }, 700);
   decorateMenu();
+
+  // 学習用のタブでは、Scratchの準備ができたら学習の画面を開く
+  if (LEARN_TAB) {
+    const waitReady = setInterval(() => {
+      let ready = false;
+      try { ready = !!document.querySelector(config.editorReady || FALLBACK.editorReady); } catch (e) { ready = false; }
+      if (ready) { clearInterval(waitReady); setTimeout(() => openApp('learn'), 800); }
+    }, 500);
+  }
 })();

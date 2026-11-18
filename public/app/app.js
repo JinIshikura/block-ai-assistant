@@ -2952,6 +2952,8 @@
   // ---------------------------------------------------------------
   HOST.on((d) => {
     if (d.kind === 'open') {
+      // 学習モードは、普段の画面とは別の画面で開く
+      if (d.view === 'learn') { if (window.BlockLearn) window.BlockLearn.open(); return; }
       if (d.view === 'ai' && view === 'code') setView('both');
       if (d.view === 'code' && view === 'ai') setView('both');
       if (!open) setOpen(true); else checkProjectChange();
