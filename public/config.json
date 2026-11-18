@@ -25,7 +25,7 @@
   },
   "editorReady": ".blocklyWorkspace",
   "learn": {
-    "baseProject": null,
+    "baseProject": "1441843455",
     "label": "学習",
     "tabButtons": [
       {
