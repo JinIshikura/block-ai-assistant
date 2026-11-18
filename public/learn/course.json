@@ -122,11 +122,10 @@
          ],
          "expect": [
           {
-           "kind": "var",
+           "kind": "varSteps",
            "name": "得点",
-           "op": ">=",
-           "value": 2,
-           "multipleOf": 2
+           "step": 2,
+           "min": 2
           }
          ],
          "fail": "ネコに触れたときの得点の増え方が、2ずつになっていないよ。"

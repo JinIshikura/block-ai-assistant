@@ -529,6 +529,13 @@
       if (x.multipleOf && n % x.multipleOf !== 0) return false;
       return true;
     }
+    if (x.kind === 'varSteps') {
+      // 変数の増え方：増えるたびに step の倍数ずつ増えているか（最後は min 以上）
+      const v = samples.map((sm) => Number(sm.vars ? sm.vars[x.name] : NaN)).filter((n) => !Number.isNaN(n));
+      if (!v.length || v[v.length - 1] < (Number(x.min) || 1)) return false;
+      for (let k = 1; k < v.length; k++) { const d = v[k] - v[k - 1]; if (d !== 0 && (d < 0 || d % x.step !== 0)) return false; }
+      return true;
+    }
     if (x.kind === 'said') {
       return samples.some((s) => s.sprites[x.sprite] && String(s.sprites[x.sprite].say || '').includes(x.text));
     }
