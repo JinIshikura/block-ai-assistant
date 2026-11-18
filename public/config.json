@@ -1,0 +1,14 @@
+{
+  "version": "0.11.0",
+  "minExtension": "0.11.0",
+  "menu": {
+    "bar": "[class*=\"menu-bar_main-menu\"]",
+    "item": "[class*=\"menu-bar_menu-bar-item\"]",
+    "hide": ["チュートリアル", "Tutorials", "Debug", "デバッグ", "でばっぐ", "ちゅーとりある"],
+    "buttons": [
+      { "label": "AIに聞く", "view": "ai" },
+      { "label": "コードで見る", "view": "code" }
+    ]
+  },
+  "editorReady": ".blocklyWorkspace"
+}

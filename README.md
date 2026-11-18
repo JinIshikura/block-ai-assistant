@@ -1,1 +1,38 @@
-# block-ai-assistant
+# ブロックAIアシスタント（サーバー版 v0.11）
+
+Scratchのエディタに、子ども向けのAIアシスタントを追加するしくみです。
+
+- **extension/**：Chromeの拡張機能（つなぎ役）。Scratchの上のバーにボタンを出し、サーバーの画面を重ねて、Scratchの中身の読み書きを取りつぐだけ。めったに更新しない。
+- **public/**：Cloudflare Pagesで配る画面（`/app/`）と設定（`/config.json`）。ふだんの更新はここ。GitHubに置くと自動で反映される。
+- **functions/api/**：AIの中継（`/api/claude`）。APIキーはCloudflareのシークレットにだけ保存する。
+
+## 先生がはじめにすること（1回だけ）
+
+1. Cloudflare Pages の設定 → 「変数とシークレット」に、次の2つを **シークレット（暗号化）** で登録し、再デプロイする
+   - `ANTHROPIC_API_KEY`：AnthropicのAPIキー（Claude Consoleで作成。月の利用上限を低めに設定しておく）
+   - `CLASS_CODE`：教室コード（好きな合言葉。各PCの設定画面に入れる）
+2. `https://block-ai-assistant.pages.dev/api/health` を開き、`"ai":true` になっていることを確かめる
+
+## 各PCですること（1回だけ）
+
+1. このリポジトリの `extension` フォルダをPCに置く
+2. Chromeで `chrome://extensions` を開き、「デベロッパーモード」をオン →「パッケージ化されていない拡張機能を読み込む」で `extension` フォルダを選ぶ（古い v0.10 は削除する）
+3. Scratchの作品を開き、上のバーの「AIに聞く」→ ⚙ →「先生用の設定」で、教室コードなどを入れる
+
+## 更新のしかた
+
+- 画面・コード変換・AIへの指示・学習課題：`public/` を更新してGitHubに置くだけ（各PCは次に開いたときに新しくなる）
+- 上のバーのボタンの名前や場所：`public/config.json` を更新するだけ
+- Scratchの中身の読み書きに新しい操作を足すとき：`extension/` を更新し、各PCで入れ替える（まれ）
+
+## 安全のために
+
+- 拡張機能は `https://block-ai-assistant.pages.dev` からの頼みしか取りつがない
+- サーバーの画面は `https://scratch.mit.edu` の中でしか表示できない（`frame-ancestors`）
+- `/api/claude` は、このサーバーのページから、正しい教室コードのときだけ使える。モデルと出力の長さはサーバー側で制限する
+- 子どもの名前や住所は会話に書かせない。会話の記録（Googleスプレッドシート）は設定でオンにしたときだけ送る
+
+## 開発メモ
+
+- `docs/apps-script.gs`：会話の記録を受けとる Google Apps Script
+- 設定・会話は各PCのブラウザ（サーバーの画面の保存領域）に保存される

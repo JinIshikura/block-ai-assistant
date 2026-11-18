@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "ブロックAIアシスタント",
+  "version": "0.11.0",
+  "description": "Scratchのエディタに、子ども向けのAIアシスタントを追加します（画面と機能はサーバーから読みこみます）。",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://scratch.mit.edu/projects/*"],
+      "js": ["page-bridge.js"],
+      "world": "MAIN",
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://scratch.mit.edu/projects/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

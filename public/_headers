@@ -1,0 +1,10 @@
+/config.json
+  Access-Control-Allow-Origin: https://scratch.mit.edu
+  Cache-Control: no-cache
+
+/app/*
+  Cache-Control: no-cache
+  Content-Security-Policy: frame-ancestors https://scratch.mit.edu 'self'
+
+/api/*
+  Cache-Control: no-store
