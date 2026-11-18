@@ -948,6 +948,7 @@
             </div>
           </div>
           <label class="pref-row chk"><input type="checkbox" class="autoread">返事を自動で読み上げる</label>
+          <button class="teacher-btn" type="button" style="align-self:flex-start;margin-top:4px;border:1px solid #C9B8EF;border-radius:8px;padding:6px 12px;background:#fff;color:#4B23A3;font:inherit;font-size:13px;font-weight:700;cursor:pointer">先生用の設定</button>
         </div>
             </div>
             <div class="plan hidden">
@@ -2126,6 +2127,10 @@
   // ---------------------------------------------------------------
   const prefs = layer.querySelector('.prefs');
   layer.querySelector('.gear').addEventListener('click', () => { prefs.classList.toggle('hidden'); renderPrefs(); });
+  // 先生用の設定（開いた画面でパスワードを聞く）
+  layer.querySelector('.teacher-btn').addEventListener('click', () => {
+    try { chrome.runtime.sendMessage({ type: 'openOptions' }); } catch (e) { /* noop */ }
+  });
   function renderPrefs() {
     layer.querySelectorAll('.kb').forEach((b) => b.classList.toggle('on', b.dataset.k === (settings.kotoba || 'normal')));
     layer.querySelector('.autoread').checked = !!settings.autoRead;
