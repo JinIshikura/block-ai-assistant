@@ -635,6 +635,12 @@
       lastResults.push({ ok: r.ok, label: c.label, why: r.msg || '' });
       if (!r.ok) all = false;
     }
+    // 判定のために隠したスプライトを、元にもどす
+    const hidden = new Set();
+    ex.checks.forEach((c) => (c.setup || []).forEach((op) => { if (op.sprite && op.visible === false) hidden.add(op.sprite); }));
+    if (hidden.size) {
+      try { await bridge('runTest', { ms: 200, flag: false, setup: [...hidden].map((sp) => ({ sprite: sp, visible: true, at: 0 })) }, 8000); } catch (e) { /* noop */ }
+    }
     return finish(all);
   }
   function finish(all) {
