@@ -11,8 +11,10 @@
      "slides": [
       {
        "title": "ブロックは、コードでも書ける",
-       "text": "Scratchのスクリプトは、Pythonのコードで表すことができる。下は、リンゴが落ちてくるゲームのスクリプトをPythonで表したもの。\nブロックの言葉が英語になり、色はブロックのカテゴリーと同じになっている。",
-       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)"
+       "text": "Scratchのスクリプトは、Pythonのコードで表すことができる。左はリンゴが落ちてくるゲームのスクリプト、右はそれをPythonで表したもの。\nブロックの言葉が英語になり、色はブロックのカテゴリーと同じになっている。",
+       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
+       "image": "apple-script.png",
+       "caption": "ブロック（リンゴのスクリプト）"
       },
       {
        "title": "ルール1：命令ブロック1つは、コード1行",
@@ -23,6 +25,13 @@
        "title": "ルール2：イベントブロックは2行",
        "text": "「緑の旗が押されたとき」のようなイベントブロックは、「@」で始まる行と「def」で始まる行の2行になる。その下の行が、イベントにつながるブロック。",
        "code": "@when_flag_clicked\ndef script1():"
+      },
+      {
+       "title": "ネコのスクリプトも読んでみよう",
+       "text": "ネコは、矢印キーで左右に動く。「もし〜なら」の行の終わりには「:」があり、その中のブロックは右に下げて書かれている（くわしくは第2回）。\n演習3では、このネコのコードにスクリプトを書き足す。",
+       "image": "cat-script.png",
+       "caption": "ブロック（ネコのスクリプト）",
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
       },
       {
        "title": "ルール3：入力欄の値は、かっこの中",
@@ -197,8 +206,10 @@
      "slides": [
       {
        "title": "字下げ＝ブロックの入れ子",
-       "text": "「ずっと」や「もし〜なら」のようなC形ブロックの中に入っているブロックは、コードでは行の先頭を右に下げて書く。これを字下げという。",
-       "code": "while True:\n    change_y(-5)\n    if touching(\"ネコ\"):\n        得点 = 得点 + 1"
+       "text": "「ずっと」や「もし〜なら」のようなC形ブロックの中に入っているブロックは、コードでは行の先頭を右に下げて書く。これを字下げという。左のブロックと右のコードで、入れ子と字下げを見比べよう。",
+       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
+       "image": "apple-script.png",
+       "caption": "ブロック（「ずっと」と「もし」の中に、ブロックが入っている）"
       },
       {
        "title": "ルール4：「:」の次の行は4文字下げる",

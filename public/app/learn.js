@@ -286,13 +286,21 @@
     const s = ls.slides[slideIdx];
     const last = slideIdx === ls.slides.length - 1;
     el.slide.innerHTML = '<div class="meta"><span></span><span class="cnt"></span></div><h1></h1><div class="body" style="display:flex;flex-direction:column;gap:12px"></div>' +
-      (s.code ? '<pre class="code"></pre>' : '') +
+      '<div class="media" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">' +
+      (s.image ? '<figure style="margin:0;flex:1 1 280px;max-width:460px;display:flex;flex-direction:column;gap:6px"><figcaption style="font-size:13px;color:#555B63"></figcaption><img style="width:100%;height:auto;border:1px solid #D5DAE1;border-radius:10px;background:#F9F9F9" alt=""></figure>' : '') +
+      (s.code ? '<pre class="code" style="flex:1 1 300px;min-width:0"></pre>' : '') + '</div>' +
       '<div class="nav"><div class="dots"></div><div style="display:flex;gap:10px"><button class="bigbtn sub prev" type="button">戻る</button><button class="bigbtn nx" type="button"></button></div></div>';
     el.slide.querySelector('.meta span').textContent = ls.title;
     el.slide.querySelector('.cnt').textContent = 'スライド ' + (slideIdx + 1) + ' / ' + ls.slides.length;
     el.slide.querySelector('h1').textContent = s.title;
     String(s.text || '').split('\n').forEach((t) => { const p = document.createElement('p'); p.textContent = t; el.slide.querySelector('.body').appendChild(p); });
     if (s.code) el.slide.querySelector('pre.code').innerHTML = hlHtml(s.code);
+    if (s.image) {
+      const img = el.slide.querySelector('figure img');
+      img.src = '/learn/img/' + encodeURIComponent(s.image);
+      img.alt = s.caption || 'ブロックの画像';
+      el.slide.querySelector('figcaption').textContent = s.caption || 'ブロック';
+    }
     const dots = el.slide.querySelector('.dots');
     ls.slides.forEach((_, k) => { const d = document.createElement('span'); d.className = 'dot' + (k === slideIdx ? ' on' : ''); dots.appendChild(d); });
     const prev = el.slide.querySelector('.prev');
