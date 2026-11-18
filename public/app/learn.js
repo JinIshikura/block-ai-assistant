@@ -76,7 +76,10 @@
   .bigbtn.sub { background: #fff; color: #1F2328; border: 1.5px solid #C5CCD6; }
   pre.code { margin: 0; background: #1E1F22; color: #D7DAE0; border-radius: 10px; padding: 14px 16px; font-family: "BIZ UDGothic", Consolas, Menlo, monospace; font-size: 16px; line-height: 1.75; overflow: auto; white-space: pre; }
   /* 演習 */
-  .ex { flex: 1; display: flex; gap: 12px; padding: 12px; min-height: 0; flex-wrap: wrap; }
+  .ex { flex: 1; display: flex; gap: 12px; padding: 12px; min-height: 0; overflow: hidden; }
+  .ex > * { min-height: 0; max-height: 100%; }
+  @media (max-width: 900px) { .ex { flex-wrap: wrap; overflow: auto; } .ex > * { max-height: none; } }
+  @media (max-height: 700px) { .stage { max-height: 170px; } .ex { padding: 8px; gap: 8px; } .task { padding: 12px; gap: 8px; } .judge { padding: 10px; gap: 8px; } }
   .task { flex: 1 1 280px; max-width: 330px; min-width: 0; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow: auto; }
   .task .crumb2 { font-size: 13px; color: #555B63; }
   .task h2 { margin: 0; font-size: 20px; line-height: 1.4; }
@@ -511,9 +514,12 @@
       return d >= (Number(x.min) || 1);
     }
     if (x.kind === 'returnAfter') {
+      // 上にある → 下まで行く → また上にもどる、の順に起きたか（動かす前の位置にまどわされないように）
       const v = valuesOf(samples, x.sprite, x.prop || 'y', x.from || 0);
-      const i = v.findIndex((n) => n < x.below);
-      return i >= 0 && v.slice(i + 1).some((n) => n > x.above);
+      const i0 = v.findIndex((n) => n > x.above);
+      if (i0 < 0) return false;
+      const i1 = v.findIndex((n, k) => k > i0 && n < x.below);
+      return i1 >= 0 && v.some((n, k) => k > i1 && n > x.above);
     }
     if (x.kind === 'reach') {
       const v = valuesOf(samples, x.sprite, x.prop, x.from || 0);
