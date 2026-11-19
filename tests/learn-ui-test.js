@@ -35,7 +35,8 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
   const normal = w.document.getElementById('block-ai-assistant-root').shadowRoot.querySelector('.panel');
   ok(normal.classList.contains('hidden'), '普段の画面は出ない');
   const pills = qa('.home .pill').map((b) => b.textContent);
-  ok(pills.length === 24 && /スライド/.test(pills[0]), '一覧に回と演習が並ぶ（すべて開いている）: ' + pills.length);
+  const C2 = JSON.parse(fs.readFileSync('/home/claude/block-ai-assistant/public/learn/course.json', 'utf8')); const want = C2.steps.reduce((n, st) => n + st.lessons.reduce((m, l) => m + 1 + l.exercises.length, 0), 0);
+  ok(pills.length === want && /スライド/.test(pills[0]), '一覧に回と演習が並ぶ（すべて開いている）: ' + pills.length);
   qa('.home .pill.slides')[0].click(); await wait(50);
   ok(/ブロックは、コードでも書ける/.test(q('.slide h1').textContent) && q('.slide pre.code .k-ev'), 'スライドが色つきコードで表示される');
   for (let i = 0; i < 4; i++) { q('.slide .nx').click(); await wait(20); }
@@ -56,7 +57,7 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
   const ta = q('textarea.code'); ta.value = ta.value.replace('change_y(-5)', 'change_y(-10)'); ta.dispatchEvent(new w.Event('input'));
   q('.jbtn').click(); await wait(400);
   ok(!q('.over.clear').classList.contains('hidden'), '直して判定するとクリア');
-  ok(!/答え/.test(root.innerHTML.replace(/答えのコード/g, '')), '「答えを見る」はない');
+  ok(![...root.querySelectorAll('button')].some((b) => /答え/.test(b.textContent) && !b.classList.contains('askok')), '「答えを見る」はない');
   q('.clear .next').click(); await wait(400);
   ok(/得点が2ずつ/.test(q('.ex-title').textContent), '次の演習へ進む');
   // ヒント

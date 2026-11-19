@@ -130,7 +130,16 @@
   .eb.stop { border-color: #E5484D; color: #FFB3B5; }
   .errline { background: rgba(229,72,77,.25); }
   .side { flex: 1 1 320px; max-width: 420px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
-  .stagebox { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .stagebox { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .stagefocus { border-radius: 10px; outline: none; border: 2px solid transparent; }
+  .stagefocus:focus { border-color: #7C4FD0; }
+  .stagehint { font-size: 12px; color: #6B7280; text-align: center; }
+  .stagefocus:focus + .stagehint { color: #4B23A3; font-weight: 700; }
+  .askbox { background: #F3EFFC; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .askq { font-size: 14px; font-weight: 700; color: #3B2C82; }
+  .askrow { display: flex; gap: 6px; }
+  .askin { flex: 1; min-width: 0; min-height: 38px; border: 1.5px solid #C9B8EF; border-radius: 8px; padding: 0 10px; font: inherit; }
+  .askok { border: none; border-radius: 8px; padding: 0 14px; background: #7C4FD0; color: #fff; font-weight: 700; }
   .stage { width: 100%; aspect-ratio: 4 / 3; max-height: min(260px, 34vh); border-radius: 8px; background: #DCEFFF; object-fit: contain; display: block; }
   .judge { flex: 1 1 auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow: auto; min-height: 0; }
   .jbtn { border: none; border-radius: 10px; padding: 12px; background: #2E7D46; color: #fff; font-weight: 700; font-size: 16px; min-height: 48px; }
@@ -205,7 +214,11 @@
           </div>
         </div>
         <div class="side">
-          <div class="stagebox card"><img class="stage" alt="ステージ"></div>
+          <div class="stagebox card">
+            <div class="stagefocus" tabindex="0" title="クリックすると、キーで動かせます"><img class="stage" alt="ステージ" draggable="false"></div>
+            <div class="stagehint">ステージをクリックすると、キーで動かせるよ</div>
+            <div class="askbox hidden"><div class="askq"></div><div class="askrow"><input class="askin" type="text" placeholder="答えを書いてEnter"><button class="askok" type="button">送る</button></div></div>
+          </div>
           <div class="judge card">
             <button class="jbtn" type="button">できた！判定する</button>
             <div class="jnote">プログラムを実際に動かして、目標ができているか確かめるよ。</div>
@@ -454,7 +467,34 @@
     clearTimeout(stageTimer);
     loopStage();
   }
-  function stopStage() { stageOn = false; clearTimeout(stageTimer); }
+  function stopStage() { stageOn = false; clearTimeout(stageTimer); showAsk(null); }
+
+  // 「質問して待つ」（input()）に、学習の画面から答える
+  const askBox = $('.askbox'); const askQ = $('.askq'); const askIn = $('.askin');
+  let askShown = false;
+  function showAsk(q) {
+    if (q === null || q === undefined) { if (askShown) { askShown = false; askBox.classList.add('hidden'); } return; }
+    askQ.textContent = q ? '質問：' + q : '質問に答えてね';
+    if (!askShown) { askShown = true; askIn.value = ''; askBox.classList.remove('hidden'); setTimeout(() => askIn.focus(), 30); }
+  }
+  function sendAsk() { const t = askIn.value; showAsk(null); bridge('answerQuestion', { text: t }).catch(() => {}); }
+  $('.askok').addEventListener('click', sendAsk);
+  askIn.addEventListener('keydown', (e) => { e.stopPropagation(); if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) { e.preventDefault(); sendAsk(); } });
+
+  // ステージをクリックしてから、キーで動かす・クリックする
+  const stageFocus = $('.stagefocus');
+  const heldKeys = new Set();
+  const stagePos = (e) => { const r = el.stage.getBoundingClientRect(); return { fx: (e.clientX - r.left) / Math.max(1, r.width), fy: (e.clientY - r.top) / Math.max(1, r.height) }; };
+  el.stage.addEventListener('mousedown', (e) => { e.preventDefault(); stageFocus.focus(); bridge('stageMouse', Object.assign(stagePos(e), { isDown: true })).catch(() => {}); });
+  el.stage.addEventListener('mouseup', (e) => { bridge('stageMouse', Object.assign(stagePos(e), { isDown: false })).catch(() => {}); });
+  stageFocus.addEventListener('keydown', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    if (heldKeys.has(e.key)) return;
+    heldKeys.add(e.key);
+    bridge('stageKey', { key: e.key, isDown: true }).catch(() => {});
+  });
+  stageFocus.addEventListener('keyup', (e) => { e.stopPropagation(); heldKeys.delete(e.key); bridge('stageKey', { key: e.key, isDown: false }).catch(() => {}); });
+  stageFocus.addEventListener('blur', () => { heldKeys.forEach((k) => bridge('stageKey', { key: k, isDown: false }).catch(() => {})); heldKeys.clear(); });
   async function loopStage() {
     if (!stageOn) return;
     let running = false;
@@ -462,6 +502,7 @@
       const r = await bridge('stageFrame', {}, 5000);
       if (r && r.url) el.stage.src = r.url;
       running = !!(r && r.running);
+      if (r && r.question !== undefined) showAsk(busy ? null : r.question);
     } catch (e) { /* noop */ }
     if (stageOn) stageTimer = setTimeout(loopStage, running || busy ? 120 : 700);
   }
@@ -537,8 +578,15 @@
 
   function checkCode(c, linesBySprite) {
     const lines = linesBySprite[c.sprite || ex.sprite] || [];
-    const want = String(c.line).trim().replace(/\s+/g, ' ');
-    const same = lines.filter((l) => l.text === want);
+    let same;
+    if (c.pattern) {
+      let re = null;
+      try { re = new RegExp(c.pattern, 'u'); } catch (e) { re = null; }
+      same = re ? lines.filter((l) => re.test(l.text)) : [];
+    } else {
+      const want = String(c.line).trim().replace(/\s+/g, ' ');
+      same = lines.filter((l) => l.text === want);
+    }
     if (same.some((l) => typeof c.indent !== 'number' || l.indent === c.indent)) return { ok: true };
     if (same.length) return { ok: false, msg: (c.fail ? c.fail + '　' : '') + '（行はあるけれど、字下げの深さがちがうよ）' };
     return { ok: false, msg: c.fail || '書き方を見直そう。' };
@@ -596,7 +644,26 @@
       return true;
     }
     if (x.kind === 'said') {
-      return samples.some((s) => s.sprites[x.sprite] && String(s.sprites[x.sprite].say || '').includes(x.text));
+      const texts = x.texts || [x.text];
+      const from = x.from || 0;
+      return samples.some((s) => s.t >= from && s.sprites[x.sprite] && texts.some((t) => String(s.sprites[x.sprite].say || '').includes(t)));
+    }
+    if (x.kind === 'still') {
+      // until（ミリ秒）までは動かない（tol 以内）
+      const v = samples.filter((s) => s.t >= (x.from || 0) && s.t <= x.until).map((s) => (s.sprites[x.sprite] ? s.sprites[x.sprite][x.prop] : undefined)).filter((n) => typeof n === 'number');
+      return v.length >= 2 && Math.max(...v) - Math.min(...v) <= (x.tol || 2);
+    }
+    if (x.kind === 'notSaid') {
+      return !samples.some((s) => s.sprites[x.sprite] && String(s.sprites[x.sprite].say || '').includes(x.text));
+    }
+    if (x.kind === 'list') {
+      const last = samples[samples.length - 1];
+      const L = last.lists ? last.lists[x.name] : undefined;
+      if (!Array.isArray(L)) return false;
+      if (typeof x.minLength === 'number' && L.length < x.minLength) return false;
+      if (typeof x.length === 'number' && L.length !== x.length) return false;
+      if (x.includes && !x.includes.every((v) => L.map(String).includes(String(v)))) return false;
+      return true;
     }
     if (x.kind === 'final') {
       const last = samples[samples.length - 1];
@@ -650,7 +717,9 @@
         r = checkCode(c, linesBySprite);
       } else if (c.type === 'run') {
         try {
-          const out = await bridge('runTest', { ms: c.ms, setup: c.setup, keys: c.keys, sampleMs: 100 }, (Number(c.ms) || 3000) + 15000);
+          const timers = (c.answers || []).map((a) => setTimeout(() => { bridge('answerQuestion', { text: String(a.text) }).catch(() => {}); }, Number(a.at) || 0));
+          let out;
+          try { out = await bridge('runTest', { ms: c.ms, setup: c.setup, keys: c.keys, sampleMs: 100 }, (Number(c.ms) || 3000) + 15000); } finally { timers.forEach(clearTimeout); }
           const okRun = (c.expect || []).every((x) => evalExpect(x, out.samples));
           r = { ok: okRun, msg: okRun ? '' : c.fail };
         } catch (e) {
