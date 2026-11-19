@@ -787,7 +787,7 @@
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
   .edwrap .hl .ln { display: block; min-height: var(--lh); }
   .edwrap .hl .ln.bad { background: rgba(229,72,77,.14); }
-  .legend .zl { color: #E5484D; font-weight: 700; }
+  .legend .zl b { color: #E5484D; font-weight: 700; text-decoration: underline wavy #E5484D; margin-right: 2px; }
   /* 色（白い背景：DNCL） */
   .k-ev { color: #A87600; font-weight: 700; } .k-ct { color: #C76E00; font-weight: 700; } .k-mo { color: #2F6FD6; } .k-lo { color: #7A4CD9; } .k-sn { color: #B03FB0; }
   .k-se { color: #23839F; } .k-op { color: #2E8F38; } .k-va { color: #D96A00; } .k-li { color: #D9531A; } .k-pe { color: #0B8F6A; } .k-fn { color: #DB3B63; font-weight: 700; }
@@ -1128,7 +1128,10 @@
     });
     const z = document.createElement('span');
     z.className = 'zl';
-    z.textContent = '１０ ＝ 全角（まちがい）';
+    const zs = document.createElement('b');
+    zs.textContent = '１０';
+    z.appendChild(zs);
+    z.appendChild(document.createTextNode('＝全角の文字（赤い波線はまちがい）'));
     lg.appendChild(z);
   })();
 

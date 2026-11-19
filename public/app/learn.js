@@ -57,7 +57,7 @@
   .home { flex: 1; overflow: auto; padding: 20px; }
   .home > * { max-width: 960px; margin-left: auto; margin-right: auto; }
   .home h2:not(:first-child) { margin-top: 26px; }
-  .home h2 { margin: 0 0 12px; font-size: 20px; }
+  .home h2 { margin: 0 auto 12px; font-size: 20px; }
   .lesson { padding: 16px 18px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; max-width: 900px; }
   .lesson .lt { font-size: 17px; font-weight: 700; }
   .lesson .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
@@ -72,7 +72,10 @@
   .slides { flex: 1; overflow: auto; display: flex; justify-content: center; padding: 20px; }
   .slide { width: 100%; max-width: 980px; max-height: 100%; padding: 22px 30px 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
   .slide .scroll { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
-  .slide figure img { display: block; max-width: 100%; width: auto; height: auto; max-height: calc(100vh - 290px); min-height: 160px; object-fit: contain; }
+  .slide figure img { display: block; max-width: 100%; width: auto; height: auto; max-height: calc(100vh - 360px); min-height: 150px; object-fit: contain; cursor: zoom-in; }
+  .slide .media pre.code { max-height: calc(100vh - 340px); }
+  .zoom { position: absolute; inset: 0; z-index: 6; background: rgba(0,0,0,.6); overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 24px; cursor: zoom-out; }
+  .zoom img { max-width: 100%; background: #fff; border-radius: 10px; }
   .slide .meta { display: flex; justify-content: space-between; font-size: 13px; color: #555B63; }
   .slide h1 { margin: 0; font-size: 26px; line-height: 1.35; }
   .slide p { margin: 0; font-size: 17px; line-height: 1.8; }
@@ -296,6 +299,8 @@
   // スライド
   // ---------------------------------------------------------------
   document.addEventListener('keydown', (e) => {
+    const z = el.root.querySelector('.zoom');
+    if (z) { if (e.key === 'Escape' || e.key.startsWith('Arrow')) { e.preventDefault(); z.remove(); } return; }
     if (el.root.classList.contains('hidden') || el.slides.classList.contains('hidden') || !lesson || e.altKey || e.ctrlKey || e.metaKey) return;
     if (e.key === 'ArrowRight') { e.preventDefault(); const b = el.slide.querySelector('.nx'); if (b) b.click(); }
     else if (e.key === 'ArrowLeft' && slideIdx > 0) { e.preventDefault(); openSlides(lesson, slideIdx - 1); }
@@ -321,7 +326,16 @@
       const img = el.slide.querySelector('figure img');
       img.src = '/learn/img/' + encodeURIComponent(s.image);
       img.alt = s.caption || 'ブロックの画像';
-      el.slide.querySelector('figcaption').textContent = s.caption || 'ブロック';
+      el.slide.querySelector('figcaption').textContent = (s.caption || 'ブロック') + '　（クリックで大きく見る）';
+      img.addEventListener('click', () => {
+        const z = document.createElement('div');
+        z.className = 'zoom';
+        const big = document.createElement('img');
+        big.src = img.src; big.alt = img.alt;
+        z.appendChild(big);
+        z.addEventListener('click', () => z.remove());
+        el.root.appendChild(z);
+      });
     }
     const dots = el.slide.querySelector('.dots');
     ls.slides.forEach((_, k) => { const d = document.createElement('span'); d.className = 'dot' + (k === slideIdx ? ' on' : ''); dots.appendChild(d); });
