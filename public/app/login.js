@@ -16,7 +16,7 @@
   const CSS = `
   .lg { position: fixed; inset: 0; z-index: 2147483646; background: #E9EDF2; display: flex; align-items: center; justify-content: center; padding: 20px;
         font: 15px/1.6 system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", sans-serif; color: #1F2328; }
-  .lg[hidden] { display: none; }
+  .lg[hidden], .lg [hidden] { display: none !important; }
   .lg .box { width: 100%; max-width: 400px; background: #fff; border-radius: 16px; padding: 26px 28px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 8px 30px rgba(0,0,0,.12); }
   .lg h1 { margin: 0; font-size: 22px; color: #4B23A3; }
   .lg p { margin: 0; font-size: 14px; color: #555B63; }
@@ -28,7 +28,8 @@
   .lg .sub { border: 1.5px solid #C5CCD6; background: #fff; color: #1F2328; }
   .lg .err { background: #FDE7DD; color: #9A330A; border-radius: 8px; padding: 8px 12px; font-size: 14px; }
   .lg .err:empty { display: none; }
-  .lg .show { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #555B63; }
+  .lg label.show { flex-direction: row; align-items: center; gap: 8px; font-size: 13px; color: #555B63; cursor: pointer; }
+  .lg label.show input { min-height: 0; width: 18px; height: 18px; padding: 0; }
   `;
   const st = document.createElement('style');
   st.textContent = CSS;
@@ -42,7 +43,7 @@
       <p>先生からもらったIDとパスワードを入れてね。</p>
       <label>ID<input name="uid" autocapitalize="off" spellcheck="false" inputmode="email"></label>
       <label>パスワード<input name="password" type="password"></label>
-      <label class="show"><input type="checkbox" class="showpw" style="min-height:auto;width:18px;height:18px"> パスワードを表示する</label>
+      <label class="show"><input type="checkbox" class="showpw"> パスワードを表示する</label>
       <div class="err"></div>
       <button class="go" type="submit">ログイン</button>
       <button class="sub back" type="button">Scratchにもどる</button>
