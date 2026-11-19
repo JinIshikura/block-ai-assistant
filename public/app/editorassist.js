@@ -31,7 +31,35 @@
     x_position: 'x座標', y_position: 'y座標', direction: '向き', answer: '答え',
     'while True:': 'ずっと（くり返す）', while: '〇のあいだ、くり返す', if: 'もし〇なら', elif: 'そうではなく、もし〇なら',
     'else:': 'でなければ', for: '〇回くり返す（for i in range(回数):）', True: 'ほんとう', False: 'うそ',
-    and: 'かつ', or: 'または', not: 'ではない'
+    and: 'かつ', or: 'または', not: 'ではない',
+    go_to_target: '〇（「ランダムな場所」やスプライト）へ行く', point_towards: '〇の方へ向ける', set_rotation_style: '回転方法を〇にする',
+    think: '〇と考える（ずっと出る）', switch_backdrop: '背景を〇にする', change_effect: '〇の効果を〇ずつ変える', set_effect: '〇の効果を〇にする',
+    go_to_layer: '最前面・最背面へ移動する', play_sound_until_done: '終わるまで〇の音を鳴らす', change_volume: '音量を〇ずつ変える', set_volume: '音量を〇%にする',
+    ask: '〇と聞いて待つ（ふつうは input() を使う）', reset_timer: 'タイマーを0にもどす', show_variable: '変数〇を表示する', hide_variable: '変数〇を隠す',
+    list_add: 'リスト〇に〇を追加する', list_delete: 'リスト〇の〇番目を削除する', list_clear: 'リスト〇のすべてを削除する',
+    list_insert: 'リスト〇の〇番目に〇を挿入する', list_replace: 'リスト〇の〇番目を〇で置きかえる',
+    pen_down: 'ペンを下ろす（動くと線がかける）', pen_up: 'ペンを上げる', pen_clear: 'ペンでかいた線を全部消す', stamp: 'スタンプする',
+    set_pen_size: 'ペンの太さを〇にする', change_pen_size: 'ペンの太さを〇ずつ変える', set_pen_color: 'ペンの色を〇にする',
+    size: '大きさ（%）', touching_color: '〇色に触れたか（True / False）', distance_to: '〇までの距離',
+    mouse_down: 'マウスが押されたか（True / False）', mouse_x: 'マウスのx座標', mouse_y: 'マウスのy座標', timer: 'タイマー（秒）', volume: '音量',
+    join: '〇と〇（文字をつなぐ）', letter_of: '〇の〇文字目', contains: '〇に〇が含まれるか（True / False）', round: '〇を四捨五入した数',
+    list_item: 'リスト〇の〇番目', list_length: 'リスト〇の長さ', list_contains: 'リスト〇に〇が含まれるか（True / False）',
+    when_flag_clicked: '緑の旗が押されたとき', when_key_pressed: '〇キーが押されたとき（"スペース" "右向き矢印" など）',
+    when_this_sprite_clicked: 'このスプライトが押されたとき', when_stage_clicked: 'ステージが押されたとき',
+    when_broadcast_received: 'メッセージ〇を受け取ったとき', when_i_start_as_clone: 'クローンされたとき', when_backdrop_switches_to: '背景が〇になったとき'
+  };
+  // 引数ごとの説明（案内バーで、いま書いている引数を説明する）
+  const ARG_HELP = {
+    歩数: '何歩動くか（数）', 角度: '何度回すか（数）', x: 'x座標（左右：-240〜240）', y: 'y座標（上下：-180〜180）', 行き先: '"ランダムな場所" や スプライトの名前',
+    秒: '何秒か（数。0.5 なども書ける）', xの変化: 'x座標をいくつ変えるか（右へ＋、左へ−）', yの変化: 'y座標をいくつ変えるか（上へ＋、下へ−）',
+    向き: '向き（90 が右、-90 が左、0 が上、180 が下）', 向く先: '"マウスのポインター" や スプライトの名前', 回転方法: '"左右のみ" "回転しない" "自由に回転"',
+    ことば: '言うこと（文字は "" でかこむ。変数や数も書ける）', コスチューム: 'コスチュームの名前（"" でかこむ）か番号', 背景: '背景の名前（"" でかこむ）',
+    変える量: 'いくつ変えるか（数）', 大きさ: '大きさ（数）', 効果: '"色" "幽霊" など', 値: '効果の大きさ（数）', '前／後ろ': '"最前面" か "最背面"',
+    音: '音の名前（"" でかこむ）', 音量: '音量（0〜100）', メッセージ: 'メッセージの名前（"" でかこむ）', 止めるもの: '"すべて" "このスクリプト" など',
+    もと: '"自分自身" や スプライトの名前', 質問: '質問の文（"" でかこむ）', 変数: '変数の名前', リスト: 'リストの名前', 項目: '入れるもの（文字や数）',
+    番号: '何番目か（1から数える）', 色: '色', 最小: 'いちばん小さい数', 最大: 'いちばん大きい数', 相手: '"マウスのポインター" "端" や スプライトの名前',
+    キー: 'キーの名前（"スペース" "右向き矢印" "a" など）', 文字1: '1つめの文字', 文字2: '2つめの文字', 文字: '文字', 何文字目: '何文字目か（数）', 数: '数',
+    回数: 'くり返す回数（数）', 条件: '正しいかどうか（例：y_position() < -170、答え == "12"）', 追加するもの: 'リストの最後に入れるもの'
   };
   const KEYWORDS = [
     { name: 'while True:', ins: 'while True:', kind: 'kw' },
@@ -80,7 +108,8 @@
       (BC.HATS || []).forEach((h) => {
         if (!h.py) return;
         const arg = h.field ? '(' + (HAT_ARG[h.field] || '""') + ')' : '';
-        list.push({ name: '@' + h.py, ins: '@' + h.py + arg, kind: 'hat', jp: h.dncl, hat: true });
+        const an = { KEY_OPTION: 'キー', BROADCAST_OPTION: 'メッセージ', BACKDROP: '背景' }[h.field];
+        list.push({ name: '@' + h.py, ins: '@' + h.py + arg, kind: 'hat', jp: h.dncl, hat: true, sig: '@' + h.py + (an ? '(' + an + ')' : '') });
       });
     } catch (e) { /* noop */ }
     baseItems = list;
@@ -102,6 +131,9 @@
   .ea-item .d { color: #555B63; font-size: 13px; overflow: hidden; text-overflow: ellipsis; }
   .ea-foot { font-size: 11px; color: #6B7280; padding: 4px 8px 2px; border-top: 1px solid #EEF0F3; margin-top: 2px; }
   .ea-bar { flex: none; min-height: 30px; display: flex; align-items: center; gap: 8px; padding: 4px 12px; font: 13px/1.4 system-ui, "Hiragino Sans", "Yu Gothic UI", sans-serif; color: #AEB4BE; background: rgba(127,127,160,.08); border-top: 1px solid rgba(127,127,160,.2); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .ea-bar code u { text-decoration: none; background: rgba(156,196,255,.25); border-radius: 3px; padding: 0 2px; }
+  .ea-bar .ah { color: #F5D88A; }
+  .ea-bar.light .ah { color: #8A5A00; }
   .ea-bar code { font-family: "BIZ UDGothic", Consolas, Menlo, monospace; color: #9CC4FF; font-weight: 700; }
   .ea-bar.light { color: #4A5163; background: #F6F7F9; border-top-color: #E3E7EE; }
   .ea-bar.light code { color: #2F5FB3; }
@@ -271,7 +303,6 @@
         b.className = 'ea-br' + (mt < 0 ? ' bad' : '');
         b.style.cssText = 'left:' + (q.x - 1) + 'px;top:' + (q.y + 1) + 'px;width:' + (w + 2) + 'px;height:' + (m.lh - 2) + 'px';
         layer.appendChild(b);
-        if (n === 0 && mt < 0) flash = { cls: 'warn', html: 'この「' + esc(v[k]) + '」と組になるかっこが見つからないよ', until: Date.now() + 2500 };
       });
     }
 
@@ -289,12 +320,26 @@
         if (mask[k]) continue;
         if (line[k] === ')') d++;
         else if (line[k] === '(') {
-          if (d === 0) { const m = /([A-Za-z_][A-Za-z0-9_]*)\s*$/.exec(line.slice(0, k)); return m ? m[1] : null; }
+          if (d === 0) {
+            const m = /([A-Za-z_][A-Za-z0-9_]*)\s*$/.exec(line.slice(0, k));
+            if (!m) return null;
+            // いま何番目の引数か（かっこの中の , を数える）
+            let arg = 0;
+            let dd = 0;
+            for (let j = k + 1; j < line.length; j++) {
+              if (mask[j]) continue;
+              if ('([{'.includes(line[j])) dd++;
+              else if (')]}'.includes(line[j])) dd--;
+              else if (line[j] === ',' && dd === 0) arg++;
+            }
+            return { name: m[1], arg };
+          }
           d--;
         }
       }
       const w = /([A-Za-z_][A-Za-z0-9_]*)$/.exec(line);
-      return w ? w[1] : (/^\s*(while|if|elif|for)\b/.exec(line) || [])[1] || null;
+      const nm = w ? w[1] : (/^\s*(while|if|elif|for)\b/.exec(line) || [])[1] || null;
+      return nm ? { name: nm, arg: -1 } : null;
     }
     function updateBar() {
       const now = Date.now();
@@ -302,9 +347,26 @@
       if (flash && flash.until > now) { bar.classList.add(flash.cls); bar.innerHTML = flash.html; return; }
       flash = null;
       if (lang() === 'py') {
-        const name = callAtCaret();
-        const it = name && buildBase().find((x) => x.name === name || x.name === name + ':');
-        if (it) { bar.innerHTML = '<code>' + esc(it.sig || it.name) + '</code><span>' + esc(descOf(it)) + '</span>'; return; }
+        const at = callAtCaret();
+        const name = at && at.name;
+        const it = name && buildBase().find((x) => x.name === name || x.name === '@' + name || x.name === name + ':');
+        if (it) {
+          const sig = it.sig || it.name;
+          const m = /^([^(]*)\((.*)\)(:?)$/.exec(sig);
+          let html = '<code>' + esc(sig) + '</code>';
+          let help = '';
+          if (m && m[2]) {
+            const args = m[2].split(',').map((t) => t.trim());
+            const k = at.arg >= 0 ? Math.min(at.arg, args.length - 1) : -1;
+            html = '<code>' + esc(m[1]) + '(' + args.map((a, i) => (i === k ? '<u>' + esc(a) + '</u>' : esc(a))).join(', ') + ')' + esc(m[3]) + '</code>';
+            if (k >= 0 && ARG_HELP[args[k]]) help = '<span class="ah">' + esc(args[k]) + '：' + esc(ARG_HELP[args[k]]) + '</span>';
+          } else if (/条件|回数/.test(sig)) {
+            const a = /条件/.test(sig) ? '条件' : '回数';
+            help = '<span class="ah">' + a + '：' + esc(ARG_HELP[a]) + '</span>';
+          }
+          bar.innerHTML = html + '<span>' + esc(descOf(it)) + '</span>' + help;
+          return;
+        }
       }
       if (lintMsg) { bar.classList.add('warn'); bar.textContent = '⚠ ' + lintMsg; return; }
       bar.textContent = TIP;
@@ -568,5 +630,5 @@
     };
   }
 
-  root.EditorAssist = { attach, _desc: DESC };
+  root.EditorAssist = { attach, _desc: DESC, _items: () => buildBase().map((x) => ({ name: x.name, sig: x.sig || x.name, desc: descOf(x) })) };
 })(typeof window !== 'undefined' ? window : globalThis);
