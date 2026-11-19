@@ -54,10 +54,12 @@
   main { flex: 1 1 auto; min-height: 0; display: flex; }
   .card { background: #fff; border-radius: 12px; }
   /* 一覧 */
-  .home { flex: 1; overflow: auto; padding: 20px; }
+  .home { flex: 1; overflow: auto; padding: 20px; position: relative; }
   .home > * { max-width: 960px; margin-left: auto; margin-right: auto; }
-  .home h2:not(:first-child) { margin-top: 26px; }
-  .home h2 { margin: 0 auto 12px; font-size: 20px; }
+  .stepnav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .stepnav button { border: 1.5px solid #C9B8EF; background: #fff; color: #4B23A3; font-weight: 700; border-radius: 999px; padding: 7px 16px; min-height: 38px; cursor: pointer; }
+  .stepnav button:hover { background: #F3EFFC; }
+  .home h2 { margin: 22px auto 12px; font-size: 20px; }
   .lesson { padding: 16px 18px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; max-width: 900px; }
   .lesson .lt { font-size: 17px; font-weight: 700; }
   .lesson .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
@@ -289,9 +291,17 @@
     show('home');
     el.crumb.textContent = '';
     el.home.innerHTML = '';
-    course.steps.forEach((st) => {
+    const nav = document.createElement('div');
+    nav.className = 'stepnav';
+    el.home.appendChild(nav);
+    course.steps.forEach((st, si) => {
       const h = document.createElement('h2');
       h.textContent = st.title;
+      const jb = document.createElement('button');
+      jb.type = 'button';
+      jb.textContent = st.title;
+      jb.addEventListener('click', () => { el.home.scrollTo({ top: h.offsetTop - 12, behavior: 'smooth' }); });
+      nav.appendChild(jb);
       el.home.appendChild(h);
       st.lessons.forEach((ls) => {
         const c = document.createElement('div');

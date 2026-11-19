@@ -48,6 +48,16 @@
     { name: 'len', ins: 'len()', caretBack: 1, kind: 'fn', sig: 'len(リスト)' },
     { name: 'append', ins: 'append()', caretBack: 1, kind: 'fn', sig: 'リスト.append(追加するもの)' }
   ];
+  // 引数の名前を日本語に（候補と案内バーで見せる）
+  const ARG_JP = {
+    steps: '歩数', degrees: '角度', x: 'x', y: 'y', to: '行き先', secs: '秒', dx: 'xの変化', dy: 'yの変化', direction: '向き', towards: '向く先',
+    style: '回転方法', message: 'ことば', costume: 'コスチューム', backdrop: '背景', change: '変える量', size: '大きさ', effect: '効果', value: '値',
+    front_back: '前／後ろ', sound_menu: '音', volume: '音量', broadcast_input: 'メッセージ', duration: '秒', stop_option: '止めるもの', clone_option: 'もと',
+    question: '質問', variable: '変数', list: 'リスト', item: '項目', index: '番号', color: '色', from: '最小', touchingobjectmenu: '相手',
+    distancetomenu: '相手', key_option: 'キー', string1: '文字1', string2: '文字2', string: '文字', letter: '何文字目', num: '数'
+  };
+  const jpArgs0 = (a) => a.split(',').map((t) => t.trim()).filter(Boolean).map((t) => ARG_JP[t] || t).join(', ');
+  const jpArgs = (a) => (a.replace(/\s/g, '') === 'from,to' ? '最小, 最大' : jpArgs0(a));
   const HAT_ARG = { KEY_OPTION: '"スペース"', BROADCAST_OPTION: '"メッセージ1"', BACKDROP: '"背景1"' };
 
   let baseItems = null;
@@ -63,7 +73,7 @@
         const m = /^([A-Za-z_][A-Za-z0-9_]*)\(([^)]*)\)/.exec(String(s));
         if (!m || seen.has(m[1]) || /^when_/.test(m[1])) return;
         seen.add(m[1]);
-        list.push({ name: m[1], ins: m[1] + '()', caretBack: m[2].trim() ? 1 : 0, kind: 'fn', sig: m[1] + '(' + m[2] + ')', jp: jp[m[1]] });
+        list.push({ name: m[1], ins: m[1] + '()', caretBack: m[2].trim() ? 1 : 0, kind: 'fn', sig: m[1] + '(' + jpArgs(m[2]) + ')', jp: jp[m[1]] });
       }));
     } catch (e) { /* noop */ }
     try {
@@ -438,6 +448,7 @@
       edit(ls, le, out, caret);
       flash = { cls: 'fix', html: '全角の「' + esc(changed) + '」を半角に直したよ（プログラムの記号や数字は半角で書こう）', until: Date.now() + 3000 };
       updateBar();
+      setTimeout(updateBar, 3100);
     }
 
     // ---- キー操作 ----
