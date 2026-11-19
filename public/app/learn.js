@@ -134,6 +134,7 @@
   .stage { width: 100%; aspect-ratio: 4 / 3; max-height: min(260px, 34vh); border-radius: 8px; background: #DCEFFF; object-fit: contain; display: block; }
   .judge { flex: 1 1 auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow: auto; min-height: 0; }
   .jbtn { border: none; border-radius: 10px; padding: 12px; background: #2E7D46; color: #fff; font-weight: 700; font-size: 16px; min-height: 48px; }
+  .judge .jbtn { position: sticky; top: -14px; z-index: 2; flex: none; box-shadow: 0 -14px 0 #fff, 0 6px 0 #fff; }
   .jbtn:disabled { opacity: .6; cursor: default; }
   .jnote { font-size: 13px; color: #555B63; line-height: 1.6; }
   .sum { font-weight: 700; font-size: 15px; border-radius: 8px; padding: 8px 10px; background: #FDE7DD; color: #9A330A; }
