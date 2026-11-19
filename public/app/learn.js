@@ -83,6 +83,16 @@
   .slide p { margin: 0; font-size: 17px; line-height: 1.8; }
   .slide .nav { flex: none; margin-top: auto; padding-top: 12px; border-top: 1px solid #EEF0F3; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
   .slide .keyh { font-size: 12px; color: #6B7280; }
+  @media (max-height: 700px) {
+    .slides { padding: 10px 20px; }
+    .slide { padding: 14px 24px 12px; gap: 10px; }
+    .slide h1 { font-size: 22px; }
+    .slide p { font-size: 15px; line-height: 1.65; }
+    .slide .scroll { gap: 10px; }
+    .slide pre.code { font-size: 14px; line-height: 1.6; padding: 10px 14px; }
+    .slide .nav { padding-top: 8px; }
+    .bigbtn { min-height: 44px; padding: 9px 22px; }
+  }
   .dots { display: flex; gap: 8px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: #C5CCD6; }
   .dot.on { background: #7C4FD0; }
