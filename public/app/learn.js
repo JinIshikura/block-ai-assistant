@@ -55,20 +55,29 @@
   .card { background: #fff; border-radius: 12px; }
   /* 一覧 */
   .home { flex: 1; overflow: auto; padding: 20px; }
+  .home > * { max-width: 960px; margin-left: auto; margin-right: auto; }
+  .home h2:not(:first-child) { margin-top: 26px; }
   .home h2 { margin: 0 0 12px; font-size: 20px; }
   .lesson { padding: 16px 18px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; max-width: 900px; }
   .lesson .lt { font-size: 17px; font-weight: 700; }
-  .lesson .row { display: flex; flex-wrap: wrap; gap: 8px; }
-  .pill { border: 1.5px solid #C5CCD6; border-radius: 10px; padding: 9px 14px; background: #fff; color: #1F2328; min-height: 44px; display: flex; align-items: center; gap: 6px; }
+  .lesson .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+  .pill { border: 1.5px solid #C5CCD6; border-radius: 10px; padding: 9px 14px; background: #fff; color: #1F2328; min-height: 48px; display: flex; align-items: center; gap: 8px; text-align: left; font-size: 15px; line-height: 1.45; cursor: pointer; }
+  .pill:hover { border-color: #7C4FD0; background: #FAF8FE; }
+  .pill .no { flex: none; font-size: 12px; font-weight: 700; color: #555B63; background: #EEF0F3; border-radius: 6px; padding: 3px 7px; }
+  .pill.done .no { background: #E3F3E8; color: #1F5A32; }
+  .pill.test { border-color: #E0A43A; }
   .pill.slides { border-color: #7C4FD0; color: #4B23A3; font-weight: 700; }
   .pill.done { border-color: #2E7D46; color: #1F5A32; }
   /* スライド */
   .slides { flex: 1; overflow: auto; display: flex; justify-content: center; padding: 20px; }
-  .slide { width: 100%; max-width: 940px; padding: 26px 30px; display: flex; flex-direction: column; gap: 16px; }
+  .slide { width: 100%; max-width: 980px; max-height: 100%; padding: 22px 30px 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+  .slide .scroll { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+  .slide figure img { display: block; max-width: 100%; width: auto; height: auto; max-height: calc(100vh - 290px); min-height: 160px; object-fit: contain; }
   .slide .meta { display: flex; justify-content: space-between; font-size: 13px; color: #555B63; }
   .slide h1 { margin: 0; font-size: 26px; line-height: 1.35; }
   .slide p { margin: 0; font-size: 17px; line-height: 1.8; }
-  .slide .nav { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .slide .nav { flex: none; margin-top: auto; padding-top: 12px; border-top: 1px solid #EEF0F3; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .slide .keyh { font-size: 12px; color: #6B7280; }
   .dots { display: flex; gap: 8px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: #C5CCD6; }
   .dot.on { background: #7C4FD0; }
@@ -107,11 +116,14 @@
   .errline { background: rgba(229,72,77,.25); }
   .side { flex: 1 1 320px; max-width: 420px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
   .stagebox { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-  .stage { width: 100%; aspect-ratio: 4 / 3; max-height: 260px; border-radius: 8px; background: #DCEFFF; object-fit: contain; display: block; }
+  .stage { width: 100%; aspect-ratio: 4 / 3; max-height: min(260px, 34vh); border-radius: 8px; background: #DCEFFF; object-fit: contain; display: block; }
   .judge { flex: 1 1 auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow: auto; min-height: 0; }
   .jbtn { border: none; border-radius: 10px; padding: 12px; background: #2E7D46; color: #fff; font-weight: 700; font-size: 16px; min-height: 48px; }
   .jbtn:disabled { opacity: .6; cursor: default; }
   .jnote { font-size: 13px; color: #555B63; line-height: 1.6; }
+  .sum { font-weight: 700; font-size: 15px; border-radius: 8px; padding: 8px 10px; background: #FDE7DD; color: #9A330A; }
+  .sum.run { background: #EEF0F3; color: #374151; font-weight: 400; }
+  .results { display: flex; flex-direction: column; gap: 8px; }
   .res { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.55; }
   .res .ic { flex: none; width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; margin-top: 1px; }
   .res.ok .ic { background: #E3F3E8; color: #2E7D46; }
@@ -185,7 +197,7 @@
             <div class="ai">
               <div class="lock">判定で${AI_AFTER_FAILS}回うまくいかなかったら、AIにヒントを聞けるよ。</div>
               <div class="open hidden" style="display:flex;flex-direction:column;gap:8px">
-                <textarea placeholder="どこがわからないか書いてね（答えのコードは教えてくれないよ）"></textarea>
+                <textarea placeholder="わからないところを書いてね"></textarea>
                 <button class="ab" type="button">AIにヒントを聞く</button>
                 <div class="reply hidden"></div>
               </div>
@@ -265,8 +277,13 @@
         ls.exercises.forEach((e, i) => {
           const b = document.createElement('button');
           b.type = 'button';
-          b.className = 'pill' + (cleared.has(e.id) ? ' done' : '');
-          b.textContent = (cleared.has(e.id) ? '✓ ' : '') + '演習' + (i + 1) + '　' + e.title;
+          b.className = 'pill' + (cleared.has(e.id) ? ' done' : '') + (ls.exercises.length && /テスト/.test(ls.title) ? ' test' : '');
+          const no = document.createElement('span');
+          no.className = 'no';
+          no.textContent = (cleared.has(e.id) ? '✓ ' : '') + '演習' + (i + 1);
+          const tt = document.createElement('span');
+          tt.textContent = e.title;
+          b.append(no, tt);
           b.addEventListener('click', () => openExercise(ls, i));
           row.appendChild(b);
         });
@@ -278,6 +295,11 @@
   // ---------------------------------------------------------------
   // スライド
   // ---------------------------------------------------------------
+  document.addEventListener('keydown', (e) => {
+    if (el.root.classList.contains('hidden') || el.slides.classList.contains('hidden') || !lesson || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); const b = el.slide.querySelector('.nx'); if (b) b.click(); }
+    else if (e.key === 'ArrowLeft' && slideIdx > 0) { e.preventDefault(); openSlides(lesson, slideIdx - 1); }
+  });
   function openSlides(ls, i) {
     lesson = ls;
     slideIdx = Math.max(0, Math.min(i, ls.slides.length - 1));
@@ -285,11 +307,11 @@
     el.crumb.textContent = ls.title + '　›　スライド';
     const s = ls.slides[slideIdx];
     const last = slideIdx === ls.slides.length - 1;
-    el.slide.innerHTML = '<div class="meta"><span></span><span class="cnt"></span></div><h1></h1><div class="body" style="display:flex;flex-direction:column;gap:12px"></div>' +
+    el.slide.innerHTML = '<div class="meta"><span></span><span class="cnt"></span></div><h1></h1><div class="scroll"><div class="body" style="display:flex;flex-direction:column;gap:12px"></div>' +
       '<div class="media" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">' +
-      (s.image ? '<figure style="margin:0;flex:1 1 280px;max-width:460px;display:flex;flex-direction:column;gap:6px"><figcaption style="font-size:13px;color:#555B63"></figcaption><img style="width:100%;height:auto;border:1px solid #D5DAE1;border-radius:10px;background:#F9F9F9" alt=""></figure>' : '') +
-      (s.code ? '<pre class="code" style="flex:1 1 300px;min-width:0"></pre>' : '') + '</div>' +
-      '<div class="nav"><div class="dots"></div><div style="display:flex;gap:10px"><button class="bigbtn sub prev" type="button">戻る</button><button class="bigbtn nx" type="button"></button></div></div>';
+      (s.image ? '<figure style="margin:0;flex:1 1 280px;max-width:460px;display:flex;flex-direction:column;gap:6px"><figcaption style="font-size:13px;color:#555B63"></figcaption><img style="border:1px solid #D5DAE1;border-radius:10px;background:#F9F9F9" alt=""></figure>' : '') +
+      (s.code ? '<pre class="code" style="flex:1 1 300px;min-width:0"></pre>' : '') + '</div></div>' +
+      '<div class="nav"><div style="display:flex;align-items:center;gap:12px"><div class="dots"></div><span class="keyh">← → キーでもめくれます</span></div><div style="display:flex;gap:10px"><button class="bigbtn sub prev" type="button">戻る</button><button class="bigbtn nx" type="button"></button></div></div>';
     el.slide.querySelector('.meta span').textContent = ls.title;
     el.slide.querySelector('.cnt').textContent = 'スライド ' + (slideIdx + 1) + ' / ' + ls.slides.length;
     el.slide.querySelector('h1').textContent = s.title;
@@ -353,6 +375,8 @@
     el.hintBtn.textContent = 'ヒントを見る（0 / ' + ex.hints.length + '）';
     el.spr.textContent = 'スプライト：' + ex.sprite;
     el.results.innerHTML = '';
+    el.results.parentNode.querySelector('.jnote').classList.remove('hidden');
+    el.aiIn.value = '';
     el.aiReply.classList.add('hidden');
     el.aiReply.textContent = '';
     updateAi();
@@ -598,7 +622,8 @@
   async function judge() {
     if (busy || !ex) return;
     setBusy(true, '動かして確かめ中…');
-    el.results.innerHTML = '';
+    el.results.innerHTML = '<div class="sum run">動かして確かめています…</div>';
+    el.results.parentNode.querySelector('.jnote').classList.add('hidden');
     lastResults = [];
     const linesBySprite = {};
     let parsed = null;
@@ -645,12 +670,20 @@
   }
   function finish(all) {
     setBusy(false);
+    const run = el.results.querySelector('.sum.run');
+    if (run) {
+      const ng = lastResults.filter((r) => !r.ok).length;
+      if (all) run.remove();
+      else { run.className = 'sum'; run.textContent = 'まだできていないところが ' + ng + ' つあるよ'; }
+    }
     if (all) {
       cleared.add(ex.id);
       showClear();
     } else {
       fails++;
       updateAi();
+      const target = fails === AI_AFTER_FAILS ? el.aiOpen : el.results;
+      try { target.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* noop */ }
     }
   }
 
