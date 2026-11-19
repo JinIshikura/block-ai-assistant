@@ -949,6 +949,7 @@
           </div>
           <label class="pref-row chk"><input type="checkbox" class="autoread">返事を自動で読み上げる</label>
           <button class="teacher-btn" type="button" style="align-self:flex-start;margin-top:4px;border:1px solid #C9B8EF;border-radius:8px;padding:6px 12px;background:#fff;color:#4B23A3;font:inherit;font-size:13px;font-weight:700;cursor:pointer">先生用の設定</button>
+          <div class="auth-row hidden" style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px;color:#4A5163"><span class="auth-who"></span><button class="logout-btn" type="button" style="border:1px solid #C7CEDB;border-radius:8px;padding:6px 12px;background:#fff;color:#1F2433;font:inherit;font-size:13px;cursor:pointer">ログアウト</button></div>
         </div>
             </div>
             <div class="plan hidden">
@@ -2118,7 +2119,17 @@
   layer.querySelector('.teacher-btn').addEventListener('click', () => {
     try { chrome.runtime.sendMessage({ type: 'openOptions' }); } catch (e) { /* noop */ }
   });
+  // ログイン中の人と、ログアウト
+  function renderAuth() {
+    const A = window.BlockAuth;
+    const u = A && A.user();
+    layer.querySelector('.auth-row').classList.toggle('hidden', !u);
+    if (u) layer.querySelector('.auth-who').textContent = (u.name || u.id) + '（' + u.id + '）でログイン中';
+  }
+  window.addEventListener('blockai-auth', renderAuth);
+  layer.querySelector('.logout-btn').addEventListener('click', () => { if (window.BlockAuth) window.BlockAuth.logout(); });
   function renderPrefs() {
+    renderAuth();
     layer.querySelectorAll('.kb').forEach((b) => b.classList.toggle('on', b.dataset.k === (settings.kotoba || 'normal')));
     layer.querySelector('.autoread').checked = !!settings.autoRead;
   }

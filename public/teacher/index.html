@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>先生用の管理画面｜ブロックAIアシスタント</title>
+<style>
+  :root { --p: #7C4FD0; --pd: #4B23A3; --bg: #F3F4F7; --line: #DDE1E8; --text: #1F2328; --sub: #555B63; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.6 system-ui, -apple-system, "Hiragino Sans", "Yu Gothic UI", sans-serif; }
+  header { background: var(--p); color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 12px; }
+  header h1 { margin: 0; font-size: 18px; flex: 1; }
+  header .who { font-size: 14px; opacity: .9; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .card { background: #fff; border-radius: 12px; padding: 18px 20px; border: 1px solid var(--line); }
+  .card h2 { margin: 0 0 12px; font-size: 17px; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--sub); }
+  input, textarea { font: inherit; color: var(--text); border: 1.5px solid #C5CCD6; border-radius: 8px; padding: 8px 10px; min-height: 40px; }
+  input:focus, textarea:focus { outline: none; border-color: var(--p); }
+  button { font: inherit; cursor: pointer; border-radius: 8px; min-height: 40px; padding: 7px 14px; border: 1.5px solid #C5CCD6; background: #fff; color: var(--text); }
+  button.pri { background: var(--p); border-color: var(--p); color: #fff; font-weight: 700; }
+  button.warn { border-color: #E5484D; color: #B42318; }
+  button:disabled { opacity: .55; cursor: default; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+  .row > label { flex: 1 1 160px; }
+  .msg { font-size: 14px; border-radius: 8px; padding: 8px 12px; }
+  .msg.ok { background: #E3F3E8; color: #1F5A32; }
+  .msg.ng { background: #FDE7DD; color: #9A330A; white-space: pre-wrap; }
+  .note { font-size: 13px; color: var(--sub); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  th { font-size: 13px; color: var(--sub); font-weight: 700; }
+  td.mono, .mono { font-family: "BIZ UDGothic", Consolas, Menlo, monospace; font-size: 15px; letter-spacing: .03em; }
+  .tag { display: inline-block; font-size: 12px; border-radius: 6px; padding: 1px 7px; background: #EEF0F3; color: var(--sub); margin-left: 6px; }
+  .tag.sim { background: #FFF1CC; color: #6B4A00; }
+  .tag.done { background: #E3F3E8; color: #1F5A32; }
+  td .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+  td .acts button { min-height: 34px; padding: 4px 10px; font-size: 13px; }
+  .login { max-width: 420px; margin: 60px auto; }
+  .hidden { display: none !important; }
+  /* 配布用カード（印刷） */
+  .slips { display: none; }
+  @media print {
+    header, main > *:not(.slips) { display: none !important; }
+    body { background: #fff; }
+    main { padding: 0; max-width: none; }
+    .slips { display: grid !important; grid-template-columns: 1fr 1fr; gap: 0; }
+    .slip { border: 1px dashed #999; padding: 14px 18px; break-inside: avoid; font-size: 14px; }
+    .slip b { font-size: 16px; }
+    .slip .mono { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<header><h1>ブロックAIアシスタント　先生用の管理画面</h1><span class="who"></span><button class="logout hidden" type="button" style="min-height:34px;background:#fff;color:var(--pd);border:none;font-weight:700">ログアウト</button></header>
+<main>
+  <section class="card login">
+    <h2>先生のログイン</h2>
+    <form class="loginf" style="display:flex;flex-direction:column;gap:12px">
+      <label>先生のID<input name="uid" autocomplete="username" required></label>
+      <label>パスワード<input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="pri" type="submit">ログイン</button>
+      <div class="msg ng hidden lmsg"></div>
+      <div class="note">先生のIDとパスワードは、Cloudflareの設定（TEACHER_ID・TEACHER_PASSWORD）で決めたものです。</div>
+    </form>
+  </section>
+
+  <section class="card admin hidden">
+    <h2>生徒を追加する</h2>
+    <form class="addf row">
+      <label>ID（半角の英小文字・数字）<input name="uid" placeholder="例：k2026-01" required></label>
+      <label>名前（ニックネーム可）<input name="nick" placeholder="例：たろう"></label>
+      <label>初期パスワード（空なら自動）<input name="initpw" placeholder="自動で作る"></label>
+      <button class="pri" type="submit">追加</button>
+    </form>
+    <details style="margin-top:12px">
+      <summary style="cursor:pointer;color:var(--pd);font-weight:700">まとめて追加する</summary>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div class="note">1行に1人。「ID,名前」または「ID,名前,初期パスワード」の形で書きます。初期パスワードを書かなければ自動で作ります。</div>
+        <textarea class="bulk mono" rows="5" placeholder="k2026-01,たろう&#10;k2026-02,はなこ"></textarea>
+        <div><button class="pri bulkb" type="button">まとめて追加</button></div>
+      </div>
+    </details>
+    <div class="msg hidden amsg" style="margin-top:10px"></div>
+    <div class="note" style="margin-top:8px">個人情報を減らすため、名前はニックネームや出席番号でもかまいません。</div>
+  </section>
+
+  <section class="card admin hidden">
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h2 style="margin:0">生徒の一覧 <span class="count note"></span></h2>
+      <div class="row"><button class="reload" type="button">更新</button><button class="print" type="button">配布用カードを印刷</button></div>
+    </div>
+    <div class="note" style="margin-bottom:8px">初期パスワードは、生徒が自分のパスワードに変えるまで表示されます。変えたあとは先生にも見えません（忘れたときは「再発行」）。</div>
+    <table>
+      <thead><tr><th>ID</th><th>名前</th><th>初期パスワード</th><th>操作</th></tr></thead>
+      <tbody class="list"></tbody>
+    </table>
+  </section>
+  <section class="slips"></section>
+</main>
+<script>
+(function () {
+  'use strict';
+  const $ = (s) => document.querySelector(s);
+  const KEY = 'blockai:teacher-session';
+  let token = sessionStorage.getItem(KEY) || '';
+  let students = [];
+
+  async function api(body) {
+    const r = await fetch('/api/auth', { method: 'POST', headers: Object.assign({ 'content-type': 'application/json' }, token ? { authorization: 'Bearer ' + token } : {}), body: JSON.stringify(body) });
+    let d = {};
+    try { d = await r.json(); } catch (e) { d = { ok: false, error: 'サーバーの返事が読めませんでした' }; }
+    d.status = r.status;
+    if (r.status === 401 && body.action !== 'login') { showLogin('ログインが切れました。もう一度ログインしてください。'); }
+    return d;
+  }
+  function msg(el, kind, text) { el.className = 'msg ' + kind + (text ? '' : ' hidden') + ' ' + el.dataset.k; el.textContent = text; }
+  $('.lmsg').dataset.k = 'lmsg'; $('.amsg').dataset.k = 'amsg';
+
+  function showLogin(text) {
+    token = ''; sessionStorage.removeItem(KEY);
+    $('.login').classList.remove('hidden');
+    document.querySelectorAll('.admin').forEach((e) => e.classList.add('hidden'));
+    $('.logout').classList.add('hidden'); $('.who').textContent = '';
+    if (text) msg($('.lmsg'), 'ng', text);
+  }
+  function showAdmin(user) {
+    $('.login').classList.add('hidden');
+    document.querySelectorAll('.admin').forEach((e) => e.classList.remove('hidden'));
+    $('.logout').classList.remove('hidden');
+    $('.who').textContent = (user && user.id ? user.id : '') + ' でログイン中';
+    load();
+  }
+
+  $('.loginf').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    msg($('.lmsg'), 'ng', '');
+    const d = await api({ action: 'login', id: f.elements.uid.value, password: f.elements.password.value });
+    if (!d.ok) return msg($('.lmsg'), 'ng', d.error || 'ログインできませんでした');
+    if (d.user.role !== 'teacher') { await fetch('/api/auth', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + d.token }, body: '{"action":"logout"}' }); return msg($('.lmsg'), 'ng', 'このページは先生用です。'); }
+    token = d.token; sessionStorage.setItem(KEY, token);
+    f.elements.password.value = '';
+    showAdmin(d.user);
+  });
+  $('.logout').addEventListener('click', async () => { await api({ action: 'logout' }); showLogin(''); });
+
+  async function load() {
+    const d = await api({ action: 'list' });
+    if (!d.ok) return;
+    students = d.students;
+    render();
+  }
+  function render() {
+    const tb = $('.list');
+    tb.innerHTML = '';
+    $('.count').textContent = '（' + students.filter((s) => !s.sim).length + '人' + (students.some((s) => s.sim) ? '＋シミュレーション用' : '') + '）';
+    students.forEach((s) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td class="mono"></td><td></td><td class="mono"></td><td><div class="acts"></div></td>';
+      tr.children[0].textContent = s.id;
+      tr.children[1].textContent = s.name;
+      if (s.sim) tr.children[1].insertAdjacentHTML('beforeend', '<span class="tag sim">シミュレーション用</span>');
+      if (s.changed) tr.children[2].innerHTML = '<span class="tag done">変更済み</span>';
+      else tr.children[2].textContent = s.init || '';
+      const acts = tr.children[3].firstChild;
+      const b1 = document.createElement('button'); b1.type = 'button'; b1.textContent = '再発行';
+      b1.title = '新しい初期パスワードを作る';
+      b1.addEventListener('click', async () => { b1.disabled = true; const d = await api({ action: 'reset', id: s.id }); b1.disabled = false; if (d.ok) { Object.assign(s, d.student); render(); msg($('.amsg'), 'ok', s.id + ' の初期パスワードを再発行しました。'); } });
+      const b2 = document.createElement('button'); b2.type = 'button'; b2.textContent = '名前を変える';
+      b2.addEventListener('click', () => {
+        const td = tr.children[1];
+        td.innerHTML = '<div class="row" style="gap:6px"><input style="min-height:34px;flex:1"><button type="button" class="pri" style="min-height:34px">保存</button></div>';
+        const inp = td.querySelector('input'); inp.value = s.name; inp.focus();
+        td.querySelector('button').addEventListener('click', async () => { const d = await api({ action: 'rename', id: s.id, name: inp.value }); if (d.ok) { Object.assign(s, d.student); } render(); });
+      });
+      const b3 = document.createElement('button'); b3.type = 'button'; b3.className = 'warn'; b3.textContent = '削除';
+      b3.addEventListener('click', async () => {
+        if (b3.dataset.sure !== '1') { b3.dataset.sure = '1'; b3.textContent = 'もう一度押すと削除'; setTimeout(() => { b3.dataset.sure = ''; b3.textContent = '削除'; }, 4000); return; }
+        const d = await api({ action: 'delete', id: s.id });
+        if (d.ok) { students = students.filter((x) => x.id !== s.id); render(); msg($('.amsg'), 'ok', s.id + ' を削除しました。'); }
+      });
+      acts.append(b1, b2, b3);
+      tb.appendChild(tr);
+    });
+  }
+  async function create(rows) {
+    msg($('.amsg'), 'ok', '');
+    const d = await api({ action: 'create', students: rows });
+    if (d.students && d.students.length) { students = students.concat(d.students).sort((a, b) => (a.sim === b.sim ? a.id.localeCompare(b.id) : a.sim ? 1 : -1)); render(); }
+    if (d.errors && d.errors.length) msg($('.amsg'), 'ng', (d.students && d.students.length ? d.students.length + '人を追加しました。\n' : '') + '追加できなかった生徒：\n' + d.errors.join('\n'));
+    else if (d.ok) msg($('.amsg'), 'ok', d.students.length + '人を追加しました。');
+    else msg($('.amsg'), 'ng', d.error || '追加できませんでした');
+    return d;
+  }
+  $('.addf').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    const d = await create([{ id: f.elements.uid.value, name: f.elements.nick.value, password: f.elements.initpw.value }]);
+    if (d.ok) f.reset();
+  });
+  $('.bulkb').addEventListener('click', async () => {
+    const rows = $('.bulk').value.split('\n').map((l) => l.trim()).filter(Boolean).map((l) => { const [id, name, password] = l.split(/[,，\t]/).map((x) => (x || '').trim()); return { id, name, password }; });
+    if (!rows.length) return;
+    const d = await create(rows);
+    if (d.ok) $('.bulk').value = '';
+  });
+  $('.reload').addEventListener('click', load);
+  $('.print').addEventListener('click', () => {
+    const box = $('.slips');
+    box.innerHTML = '';
+    students.filter((s) => !s.changed).forEach((s) => {
+      const d = document.createElement('div');
+      d.className = 'slip';
+      d.innerHTML = '<b></b><div>ID：<span class="mono id"></span></div><div>初期パスワード：<span class="mono pw"></span></div><div style="font-size:12px;color:#555">はじめてログインしたら、自分だけのパスワードに変えてね。</div>';
+      d.querySelector('b').textContent = s.name + ' さん';
+      d.querySelector('.id').textContent = s.id;
+      d.querySelector('.pw').textContent = s.init || '';
+      box.appendChild(d);
+    });
+    if (!box.children.length) { msg($('.amsg'), 'ok', '印刷するカードはありません（全員がパスワードを変更済みです）。'); return; }
+    window.print();
+  });
+
+  // 開いたとき：前のログインが残っていれば使う
+  (async () => {
+    const h = await fetch('/api/health').then((r) => r.json()).catch(() => ({}));
+    if (!h.auth) { showLogin(''); msg($('.lmsg'), 'ng', 'ログインのしくみが、まだCloudflareで設定されていません（KV の USERS と、TEACHER_ID・TEACHER_PASSWORD）。'); return; }
+    if (!token) return showLogin('');
+    const d = await api({ action: 'me' });
+    if (d.ok && d.user.role === 'teacher') showAdmin(d.user); else showLogin('');
+  })();
+})();
+</script>
+</body>
+</html>

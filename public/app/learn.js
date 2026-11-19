@@ -187,6 +187,8 @@
         <span class="crumb"></span>
       </div>
       <div style="display:flex;gap:8px">
+        <span class="who" style="align-self:center;font-size:13px;opacity:.9"></span>
+        <button class="hb ghost logout hidden" type="button">ログアウト</button>
         <button class="hb ghost go-home" type="button">一覧</button>
         <button class="hb quit" type="button">学習をやめる</button>
       </div>
@@ -824,6 +826,13 @@
   // ---------------------------------------------------------------
   // 開く・やめる
   // ---------------------------------------------------------------
+  function renderWho() {
+    const u = window.BlockAuth && window.BlockAuth.user();
+    $('.who').textContent = u ? (u.name || u.id) + ' さん' : '';
+    $('.hb.logout').classList.toggle('hidden', !u);
+  }
+  window.addEventListener('blockai-auth', renderWho);
+  $('.hb.logout').addEventListener('click', () => { if (busy) return; stopStage(); window.BlockAuth.logout(); });
   $('.go-home').addEventListener('click', () => { if (!busy) renderHome(); });
   $('.quit').addEventListener('click', () => el.confirm.classList.remove('hidden'));
   $('.confirm .no').addEventListener('click', () => el.confirm.classList.add('hidden'));

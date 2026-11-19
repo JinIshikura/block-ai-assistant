@@ -1,6 +1,7 @@
 // ブロックAIアシスタント - AIの中継（Cloudflare Pages Functions）
 // APIキーはCloudflareのシークレット ANTHROPIC_API_KEY にだけ保存する。
-// 使えるのは、教室コード（シークレット CLASS_CODE）を知っているPCだけ。
+// 使えるのは、ログインした人（生徒・先生）か、教室コード（シークレット CLASS_CODE）を知っているPCだけ。
+import { getSession, getUser } from '../../lib/auth.js';
 const ALLOWED_MODELS = ['claude-sonnet-5-5', 'claude-haiku-5-5'];
 const DEFAULT_MODEL = 'claude-sonnet-5-5';
 const MAX_TOKENS = 16000;
@@ -24,8 +25,12 @@ export async function onRequestPost({ request, env }) {
   const self = new URL(request.url).origin;
   const origin = request.headers.get('origin');
   if (origin && origin !== self) return err('このサーバーのページからだけ使えます', 403);
-  if (!env.ANTHROPIC_API_KEY || !env.CLASS_CODE) return err('NO_SERVER_KEY', 503);
-  if (!sameText(request.headers.get('x-class-code') || '', env.CLASS_CODE)) return err('教室コードがちがいます', 401);
+  if (!env.ANTHROPIC_API_KEY) return err('NO_SERVER_KEY', 503);
+  let allowed = false;
+  const sess = await getSession(env, request);
+  if (sess) allowed = sess.role === 'teacher' || !!(await getUser(env, sess.id));
+  if (!allowed && env.CLASS_CODE) allowed = sameText(request.headers.get('x-class-code') || '', env.CLASS_CODE);
+  if (!allowed) return err(request.headers.get('authorization') ? 'LOGIN_EXPIRED' : '教室コードがちがいます', 401);
 
   const size = Number(request.headers.get('content-length') || 0);
   if (size > MAX_BODY) return err('送るデータが大きすぎます', 413);

@@ -95,15 +95,22 @@
 
   async function post(req) {
     const { classCode } = await storage.get('classCode');
+    const A = window.BlockAuth;
+    const headers = { 'content-type': 'application/json', 'x-class-code': classCode || '' };
+    if (A && A.token()) headers.authorization = 'Bearer ' + A.token();
     return fetch('/api/claude', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-class-code': classCode || '' },
+      headers,
       body: JSON.stringify(req)
     });
   }
 
   function serverError(status, m) {
-    if (status === 401) return new Error('NO_KEY');
+    if (status === 401) {
+      const A = window.BlockAuth;
+      if (A && A.enabled) { A.require(); return new Error('ログインが切れました。もう一度ログインしてね。'); }
+      return new Error('NO_KEY');
+    }
     if (status === 503) return new Error('サーバーにAIのキーが登録されていません（先生へ：Cloudflareの設定を確認してください）');
     if (status === 429) return new Error('いまAIが混み合っています。少し待ってからためしてね。');
     return new Error(m || ('HTTP ' + status));
