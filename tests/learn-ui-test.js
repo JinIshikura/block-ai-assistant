@@ -22,7 +22,7 @@ w.fetch = async (url) => {
   const data = fs.readFileSync(R + decodeURIComponent(f));
   return new Response(data, { status: 200 });
 };
-for (const f of ['shim.js', 'codeconv.js', 'learn.js', 'app.js']) w.eval(fs.readFileSync(R + 'app/' + f, 'utf8'));
+for (const f of ['shim.js', 'codeconv.js', 'editorassist.js', 'learn.js', 'app.js']) w.eval(fs.readFileSync(R + 'app/' + f, 'utf8'));
 const root = w.document.getElementById('blockai-learn').shadowRoot;
 const q = (s) => root.querySelector(s);
 const qa = (s) => [...root.querySelectorAll(s)];

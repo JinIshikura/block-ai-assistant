@@ -907,7 +907,7 @@
               <button class="cbtn copy-code">コピー</button>
               <button class="cbtn ask-code">AIに聞く</button>
             </div>
-            <div class="code-note">「ブロックにする」で、このスプライトのスクリプトが置きかわります（「元にもどす」で戻せます）。「ためしに動かす」は作品を変えずに動きだけ見られます。Tabで字下げ、Enterで次の行も同じ深さ。</div>
+            <div class="code-note">「ブロックにする」で、このスプライトのスクリプトが置きかわります（「元にもどす」で戻せます）。「ためしに動かす」は作品を変えずに動きだけ見られます。入力の途中で候補が出ます（Ctrl+Spaceでも出せます）。かっこは自動で閉じ、全角の記号は半角に直します。</div>
           </div>
         </div>
         <div class="side">
@@ -1137,6 +1137,7 @@
 
   function applyTheme() {
     codeCol.classList.toggle('dark', codeLang() === 'py');
+    try { if (assist) { assist.bar.classList.toggle('light', codeLang() !== 'py'); assist.refresh(); } } catch (e) { /* 準備前 */ }
   }
 
   function applyFont() {
@@ -1276,41 +1277,24 @@
 
   codeTa.addEventListener('keydown', (e) => {
     e.stopPropagation(); // Scratchのショートカットに反応させない
-    const unit = codeLang() === 'py' ? '    ' : '| ';
-    const v = codeTa.value;
-    const st = codeTa.selectionStart;
-    const en = codeTa.selectionEnd;
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      const ls = lineStart(v, st);
-      if (e.shiftKey) {
-        const line = v.slice(ls);
-        const m = codeLang() === 'py' ? /^ {1,4}/.exec(line) : /^(\| |\|)/.exec(line);
-        if (m) {
-          codeTa.value = v.slice(0, ls) + v.slice(ls + m[0].length);
-          codeTa.selectionStart = codeTa.selectionEnd = Math.max(ls, st - m[0].length);
-        }
-      } else {
-        codeTa.value = v.slice(0, ls) + unit + v.slice(ls);
-        codeTa.selectionStart = st + unit.length;
-        codeTa.selectionEnd = en + unit.length;
-      }
-      codeTa.dispatchEvent(new Event('input'));
-      return;
-    }
-    if (e.key === 'Enter' && !e.isComposing) {
-      e.preventDefault();
-      const ls = lineStart(v, st);
-      const line = v.slice(ls, st);
+  });
+  // 入力サポート（Tab・Enter の字下げ、かっこ、入力候補、全角の直し、案内バー）
+  const assist = window.EditorAssist ? window.EditorAssist.attach({
+    ta: codeTa,
+    wrap: codeTa.parentNode,
+    barAfter: layer.querySelector('.editor'),
+    lang: () => codeLang(),
+    indentUnit: () => (codeLang() === 'py' ? '    ' : '| '),
+    enterIndent: (line) => {
+      const unit = codeLang() === 'py' ? '    ' : '| ';
       let prefix = codeLang() === 'py' ? /^ */.exec(line)[0] : /^[|｜└⎿│ 　]*/.exec(line)[0].replace(/[└⎿]/g, '|');
       const body = line.replace(/#.*$/, '').trim();
       if (/[:：]$/.test(body)) prefix += unit;
-      const ins = '\n' + prefix;
-      codeTa.value = v.slice(0, st) + ins + v.slice(en);
-      codeTa.selectionStart = codeTa.selectionEnd = st + ins.length;
-      codeTa.dispatchEvent(new Event('input'));
-    }
-  });
+      return prefix;
+    },
+    parseOpts: () => codeOpts(),
+    light: true
+  }) : null;
   codeTa.addEventListener('keyup', (e) => e.stopPropagation());
 
   function showCodeError(err) {

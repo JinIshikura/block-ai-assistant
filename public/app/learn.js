@@ -410,6 +410,7 @@
     el.ta.value = ex.starter[ex.sprite] || '';
     errLine = 0;
     paint();
+    if (assist) assist.refresh();
     await prepare();
   }
 
@@ -488,33 +489,8 @@
   }
   el.ta.addEventListener('input', () => { errLine = 0; paint(); });
   el.ta.addEventListener('scroll', syncScroll);
-  el.ta.addEventListener('keydown', (e) => {
-    if (e.isComposing || e.keyCode === 229) return;
-    const ta = el.ta;
-    const v = ta.value;
-    const st = ta.selectionStart;
-    const en = ta.selectionEnd;
-    const ls = v.lastIndexOf('\n', st - 1) + 1;
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      if (e.shiftKey) {
-        const m = /^ {1,4}/.exec(v.slice(ls));
-        if (m) { ta.value = v.slice(0, ls) + v.slice(ls + m[0].length); ta.selectionStart = ta.selectionEnd = Math.max(ls, st - m[0].length); }
-      } else {
-        ta.value = v.slice(0, st) + '    ' + v.slice(en);
-        ta.selectionStart = ta.selectionEnd = st + 4;
-      }
-      paint();
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      const line = v.slice(ls, st);
-      let ind = (/^ */.exec(line) || [''])[0];
-      if (/:\s*$/.test(line)) ind += '    ';
-      ta.value = v.slice(0, st) + '\n' + ind + v.slice(en);
-      ta.selectionStart = ta.selectionEnd = st + 1 + ind.length;
-      paint();
-    }
-  });
+  // 入力サポート（入力候補・かっこ・字下げ・全角の直し・案内バー）
+  const assist = window.EditorAssist ? window.EditorAssist.attach({ ta: el.ta, wrap: el.ta.parentNode, barAfter: $('.editor'), lang: () => 'py' }) : null;
 
   // ヒント
   el.hintBtn.addEventListener('click', () => {
