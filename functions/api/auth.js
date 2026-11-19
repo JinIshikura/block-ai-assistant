@@ -8,6 +8,11 @@ function json(obj, status) {
   return new Response(JSON.stringify(obj), { status: status || 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 }
 const fail = (message, status) => json({ ok: false, error: message }, status || 400);
+async function getProgress(env, id) {
+  const raw = await env.USERS.get('p:' + id);
+  const p = raw ? JSON.parse(raw) : {};
+  return { cleared: p.cleared || {}, tries: p.tries || {}, last: p.last || 0 };
+}
 const pub = (u) => ({ id: u.id, name: u.name, init: u.mustChange ? u.init : null, changed: !u.mustChange, sim: !!u.sim, created: u.created });
 
 export async function onRequestPost({ request, env }) {
@@ -64,8 +69,34 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: true });
   }
 
+  // 学習の記録（生徒）：判定の結果を残す
+  if (action === 'record') {
+    if (s.role !== 'student') return json({ ok: true, skipped: true });
+    const ex = String(b.ex || '');
+    if (!/^[a-z0-9]{2,12}$/.test(ex)) return fail('課題の名前がおかしいです');
+    const p = await getProgress(env, s.id);
+    p.tries[ex] = (p.tries[ex] || 0) + 1;
+    if (b.ok && !p.cleared[ex]) p.cleared[ex] = Date.now();
+    p.last = Date.now();
+    await env.USERS.put('p:' + s.id, JSON.stringify(p));
+    return json({ ok: true, progress: p });
+  }
+  if (action === 'myProgress') {
+    return json({ ok: true, progress: s.role === 'student' ? await getProgress(env, s.id) : null });
+  }
+
   // ここから先生だけ
   if (s.role !== 'teacher') return fail('先生だけが使えます', 403);
+  if (action === 'progressAll') {
+    const list = await listStudents(env);
+    const out = [];
+    for (const u of list) out.push({ id: u.id, name: u.name, sim: !!u.sim, progress: await getProgress(env, u.id) });
+    return json({ ok: true, students: out });
+  }
+  if (action === 'resetProgress') {
+    await env.USERS.delete('p:' + String(b.id || ''));
+    return json({ ok: true });
+  }
   if (action === 'list') {
     let list = await listStudents(env);
     if (!list.some((u) => u.id === SIM_ID)) { list.push(await newStudent(env, SIM_ID, 'シミュレーション用', null, true)); }
@@ -107,6 +138,7 @@ export async function onRequestPost({ request, env }) {
     const id = String(b.id || '');
     if (!(await getUser(env, id))) return fail('その生徒はいません', 404);
     await env.USERS.delete('u:' + id);
+    await env.USERS.delete('p:' + id);
     return json({ ok: true });
   }
   return fail('知らない操作です');

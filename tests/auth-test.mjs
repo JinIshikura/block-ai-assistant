@@ -49,6 +49,17 @@ r = await call({ action: 'reset', id: 'kids02' }, T);
 ok(r.ok && r.student.init && !r.student.changed, '先生が初期パスワードを再発行できる（ロックも解除）');
 r = await call({ action: 'login', id: 'kids02', password: r.student.init });
 ok(r.ok, '再発行したパスワードで入れる');
+r = await call({ action: 'record', ex: 'l1e1', ok: false }, S);
+r = await call({ action: 'record', ex: 'l1e1', ok: true }, S);
+ok(r.ok && r.progress.tries.l1e1 === 2 && r.progress.cleared.l1e1 > 0, '生徒の判定の結果を記録できる（回数とクリア）');
+r = await call({ action: 'myProgress' }, S);
+ok(r.ok && r.progress.cleared.l1e1, '自分の記録を読める');
+r = await call({ action: 'progressAll' }, S);
+ok(r.status === 403, '生徒はほかの人の記録を見られない');
+r = await call({ action: 'progressAll' }, T);
+ok(r.ok && r.students.find((x) => x.id === 'kids01').progress.cleared.l1e1, '先生は全員の記録を見られる');
+r = await call({ action: 'record', ex: 'l1e1', ok: true }, T);
+ok(r.ok && r.skipped, '先生がためしても記録しない');
 // AIの中継
 globalThis.fetch = async () => new Response('{}', { status: 200 });
 const creq = (h) => new Request('https://x.pages.dev/api/claude', { method: 'POST', headers: Object.assign({ 'content-type': 'application/json' }, h), body: JSON.stringify({ messages: [{ role: 'user', content: 'hi' }] }) });

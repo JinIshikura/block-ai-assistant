@@ -243,7 +243,7 @@
       <h1>クリア！</h1><div class="clear-title"></div>
       <div class="clear-list" style="align-self:stretch;text-align:left;display:flex;flex-direction:column;gap:6px;background:#F6F7F9;border-radius:10px;padding:12px 16px"></div>
       <div class="row"><button class="bigbtn sub again" type="button">もう一度ためす</button><button class="bigbtn next" type="button">次へ</button></div>
-      <div class="small">記録は残りません（サーバー導入後は、先生の見守り画面にも表示されます）。</div>
+      <div class="small clear-note"></div>
     </div></div>
     <div class="over confirm hidden"><div class="box">
       <div style="font-size:18px;font-weight:700">学習をやめますか？</div>
@@ -269,7 +269,23 @@
   let fails = 0;
   let hintsShown = 0;
   let busy = false;
-  const cleared = new Set(); // このタブを開いているあいだだけ
+  const cleared = new Set(); // ログインしていればサーバーの記録、していなければこのタブのあいだだけ
+  const isStudent = () => { const u = window.BlockAuth && window.BlockAuth.user(); return !!(u && u.role === 'student'); };
+  async function authApi(body) {
+    const A = window.BlockAuth;
+    if (!A || !A.token()) return null;
+    try {
+      const r = await fetch('/api/auth', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + A.token() }, body: JSON.stringify(body) });
+      return await r.json();
+    } catch (e) { return null; }
+  }
+  async function loadProgress() {
+    cleared.clear();
+    if (!isStudent()) return;
+    const d = await authApi({ action: 'myProgress' });
+    if (d && d.ok && d.progress) Object.keys(d.progress.cleared || {}).forEach((k) => cleared.add(k));
+  }
+  function record(ok) { if (isStudent() && ex) authApi({ action: 'record', ex: ex.id, ok: !!ok }); }
   const projectCache = {};
 
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -310,6 +326,13 @@
         c.className = 'lesson card';
         c.innerHTML = '<div class="lt"></div><div class="row"></div>';
         c.querySelector('.lt').textContent = ls.title;
+        const nDone = ls.exercises.filter((e) => cleared.has(e.id)).length;
+        if (nDone) {
+          const tag = document.createElement('span');
+          tag.style.cssText = 'margin-left:10px;font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;' + (nDone === ls.exercises.length ? 'background:#E3F3E8;color:#1F5A32' : 'background:#EEF0F3;color:#374151');
+          tag.textContent = nDone === ls.exercises.length ? '✓ ぜんぶクリア' : nDone + ' / ' + ls.exercises.length + ' クリア';
+          c.querySelector('.lt').appendChild(tag);
+        }
         const row = c.querySelector('.row');
         const sb = document.createElement('button');
         sb.type = 'button'; sb.className = 'pill slides'; sb.textContent = 'スライド（' + ls.slides.length + '枚）';
@@ -754,6 +777,7 @@
   }
   function finish(all) {
     setBusy(false);
+    record(all);
     const run = el.results.querySelector('.sum.run');
     if (run) {
       const ng = lastResults.filter((r) => !r.ok).length;
@@ -773,6 +797,7 @@
 
   function showClear() {
     $('.clear-title').textContent = ex.title;
+    $('.clear-note').textContent = isStudent() ? 'クリアを記録しました。先生の画面でも見られます。' : 'ログインしていないので、記録は残りません。';
     const list = $('.clear-list');
     list.innerHTML = '';
     lastResults.forEach((r) => { const d = document.createElement('div'); d.textContent = '✓ ' + r.label; d.style.color = '#1F5A32'; list.appendChild(d); });
@@ -831,7 +856,11 @@
     $('.who').textContent = u ? (u.name || u.id) + ' さん' : '';
     $('.hb.logout').classList.toggle('hidden', !u);
   }
-  window.addEventListener('blockai-auth', renderWho);
+  window.addEventListener('blockai-auth', async () => {
+    renderWho();
+    await loadProgress();
+    if (course && !el.home.classList.contains('hidden')) renderHome();
+  });
   $('.hb.logout').addEventListener('click', () => { if (busy) return; stopStage(); window.BlockAuth.logout(); });
   $('.go-home').addEventListener('click', () => { if (!busy) renderHome(); });
   $('.quit').addEventListener('click', () => el.confirm.classList.remove('hidden'));
@@ -850,6 +879,7 @@
       try {
         const r = await fetch('/learn/course.json', { cache: 'no-cache' });
         course = await r.json();
+        await loadProgress();
       } catch (e) {
         el.home.innerHTML = '<div class="jnote" style="padding:20px">課題を読みこめませんでした。インターネットにつながっているか確かめてね。</div>';
         return;

@@ -1,0 +1,45 @@
+// 先生の管理画面のテスト：node tests/teacher-test.js
+const fs = require('fs');
+const { JSDOM } = require('jsdom');
+const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.exitCode = 1; };
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const html = fs.readFileSync('public/teacher/index.html', 'utf8');
+const course = JSON.parse(fs.readFileSync('public/learn/course.json', 'utf8'));
+const dom = new JSDOM(html.replace(/<script>[\s\S]*<\/script>/, ''), { url: 'https://block-ai-assistant.pages.dev/teacher/', runScripts: 'outside-only' });
+const w = dom.window;
+const sent = [];
+const res = (o, s) => ({ status: s || 200, json: async () => o });
+w.fetch = async (url, opt) => {
+  const b = opt && opt.body ? JSON.parse(opt.body) : {};
+  sent.push(b);
+  if (url === '/api/health') return res({ ok: true, auth: true });
+  if (url.startsWith('/learn/course.json')) return res(course);
+  if (b.action === 'login') return res({ ok: true, token: 't'.repeat(64), user: { id: 'sensei', role: 'teacher', name: '先生' } });
+  if (b.action === 'list') return res({ ok: true, students: [{ id: 'k01', name: 'たろう', init: 'abcd2345', changed: false }, { id: 'sim01', name: 'シミュレーション用', init: null, changed: true, sim: true }] });
+  if (b.action === 'progressAll') return res({ ok: true, students: [{ id: 'k01', name: 'たろう', progress: { cleared: { l1e1: 1, l1e2: 2, l1e3: 3 }, tries: { l1e1: 2, l2e1: 1 }, last: Date.now() } }] });
+  if (b.action === 'create') return res({ ok: true, students: b.students.map((s) => ({ id: s.id, name: s.name, init: 'zzzz2345', changed: false })), errors: [] });
+  return res({ ok: true });
+};
+w.print = () => { w.__printed = true; };
+w.eval(html.match(/<script>([\s\S]*)<\/script>/)[1]);
+(async () => {
+  await wait(30);
+  const $ = (s) => w.document.querySelector(s);
+  ok(!$('.login').classList.contains('hidden'), '最初はログイン画面');
+  const f = $('.loginf');
+  f.elements.uid.value = 'sensei'; f.elements.password.value = 'x';
+  f.dispatchEvent(new w.Event('submit', { cancelable: true }));
+  await wait(50);
+  const rows = [...w.document.querySelectorAll('.list tr')];
+  ok(rows.length === 2 && rows[0].textContent.includes('abcd2345') && rows[1].textContent.includes('変更済み'), '生徒の一覧（初期パスワード・変更済み）');
+  const pr = [...w.document.querySelectorAll('.prog tr')];
+  ok(pr.length === 3 && pr[2].textContent.includes('3/3') && pr[2].querySelector('td.all'), '進み具合の表（第1回 3/3 クリア）');
+  const af = $('.addf');
+  af.elements.uid.value = 'k02'; af.elements.nick.value = 'はなこ';
+  af.dispatchEvent(new w.Event('submit', { cancelable: true }));
+  await wait(30);
+  ok(sent.some((b) => b.action === 'create' && b.students[0].id === 'k02') && w.document.querySelectorAll('.list tr').length === 3, '生徒を追加できる');
+  $('.print').click();
+  ok(w.__printed && w.document.querySelectorAll('.slip').length === 2, '配布用カード（変更済みの生徒はのぞく）');
+  process.exit();
+})();

@@ -37,6 +37,12 @@
   td .acts { display: flex; gap: 6px; flex-wrap: wrap; }
   td .acts button { min-height: 34px; padding: 4px 10px; font-size: 13px; }
   .login { max-width: 420px; margin: 60px auto; }
+  table.prog th, table.prog td { text-align: center; white-space: nowrap; font-size: 14px; padding: 7px 6px; }
+  table.prog th:first-child, table.prog td:first-child { text-align: left; position: sticky; left: 0; background: #fff; }
+  table.prog td.all { background: #E3F3E8; color: #1F5A32; font-weight: 700; }
+  table.prog td.some { background: #FFF6E0; color: #6B4A00; }
+  table.prog td.none { color: #9AA1AB; }
+  table.prog th.step { background: #F3EFFC; color: var(--pd); }
   .hidden { display: none !important; }
   /* 配布用カード（印刷） */
   .slips { display: none; }
@@ -96,6 +102,14 @@
       <tbody class="list"></tbody>
     </table>
   </section>
+  <section class="card admin hidden">
+    <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h2 style="margin:0">学習の進み具合</h2>
+      <button class="preload" type="button">更新</button>
+    </div>
+    <div class="note" style="margin-bottom:8px">数字は「クリアした演習 / 演習の数」。数字にマウスをのせると、演習ごとのようすと判定した回数が出ます。最後に学習した日時も見られます。</div>
+    <div style="overflow-x:auto"><table class="prog"></table></div>
+  </section>
   <section class="slips"></section>
 </main>
 <script>
@@ -130,6 +144,7 @@
     $('.logout').classList.remove('hidden');
     $('.who').textContent = (user && user.id ? user.id : '') + ' でログイン中';
     load();
+    loadProgress();
   }
 
   $('.loginf').addEventListener('submit', async (e) => {
@@ -206,6 +221,51 @@
     if (d.ok) $('.bulk').value = '';
   });
   $('.reload').addEventListener('click', load);
+  // 学習の進み具合
+  let course = null;
+  async function loadProgress() {
+    if (!course) { try { course = await fetch('/learn/course.json', { cache: 'no-cache' }).then((r) => r.json()); } catch (e) { return; } }
+    const d = await api({ action: 'progressAll' });
+    if (!d.ok) return;
+    const tb = $('.prog');
+    tb.innerHTML = '';
+    const head1 = document.createElement('tr');
+    const head2 = document.createElement('tr');
+    head1.innerHTML = '<th rowspan="2">生徒</th>';
+    head2.innerHTML = '';
+    const lessons = [];
+    course.steps.forEach((st) => {
+      const th = document.createElement('th');
+      th.className = 'step'; th.colSpan = st.lessons.length; th.textContent = st.title;
+      head1.appendChild(th);
+      st.lessons.forEach((l) => { lessons.push(l); const t2 = document.createElement('th'); t2.textContent = l.title.replace(/^(第\d+回|ステップ\d)[\s　]*/, '$1').replace(/まとめテスト$/, 'まとめ').slice(0, 6); t2.title = l.title; head2.appendChild(t2); });
+    });
+    head1.insertAdjacentHTML('beforeend', '<th rowspan="2">合計</th><th rowspan="2">最後に学習</th>');
+    tb.append(head1, head2);
+    const total = lessons.reduce((n, l) => n + l.exercises.length, 0);
+    d.students.forEach((st) => {
+      const tr = document.createElement('tr');
+      const p = st.progress || { cleared: {}, tries: {} };
+      const td0 = document.createElement('td');
+      td0.textContent = st.name + '（' + st.id + '）';
+      tr.appendChild(td0);
+      let sum = 0;
+      lessons.forEach((l) => {
+        const n = l.exercises.filter((e) => p.cleared[e.id]).length;
+        sum += n;
+        const td = document.createElement('td');
+        td.className = n === l.exercises.length ? 'all' : n ? 'some' : (l.exercises.some((e) => p.tries[e.id]) ? 'some' : 'none');
+        td.textContent = n + '/' + l.exercises.length;
+        td.title = l.title + '\n' + l.exercises.map((e, i) => (p.cleared[e.id] ? '✓ ' : p.tries[e.id] ? '… ' : '－ ') + '演習' + (i + 1) + ' ' + e.title + (p.tries[e.id] ? '（判定 ' + p.tries[e.id] + '回）' : '')).join('\n');
+        tr.appendChild(td);
+      });
+      const tdS = document.createElement('td'); tdS.textContent = sum + '/' + total; tdS.style.fontWeight = '700';
+      const tdL = document.createElement('td'); tdL.textContent = p.last ? new Date(p.last).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '－';
+      tr.append(tdS, tdL);
+      tb.appendChild(tr);
+    });
+  }
+  $('.preload').addEventListener('click', loadProgress);
   $('.print').addEventListener('click', () => {
     const box = $('.slips');
     box.innerHTML = '';
