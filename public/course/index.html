@@ -51,8 +51,15 @@
     l.exercises.forEach((e, k) => {
       const d = document.createElement('section');
       d.className = 'exl';
-      d.innerHTML = '<h3>演習' + (k + 1) + '　' + esc(e.title) + '</h3><ol class="g">' + e.goals.map((g) => '<li>' + esc(g) + '</li>').join('') + '</ol>' +
-        '<div class="g" style="margin:8px 0 4px">最初のコード（' + esc(e.sprite) + '）</div>' + B.table(e.starter[e.sprite]);
+      if (e.type === 'quiz') {
+        d.innerHTML = '<h3>演習' + (k + 1) + '（えらぶ問題）　' + esc(e.title) + '</h3><p class="g">' + esc(e.question) + '</p>' + (e.code ? B.table(e.code) : '') +
+          '<ol style="margin:8px 0 0">' + e.choices.map((c, i) => '<li style="margin:4px 0">' + (c.block ? B.blocks(c.block) : c.code ? '<code style="background:#1E1F23;color:#E6E6E6;border-radius:5px;padding:2px 8px;white-space:pre">' + esc(c.code) + '</code>' : esc(c.text)) + (i === e.answer ? '　<b style="color:#1F5A32">← 正解</b>' : '') + '</li>').join('') + '</ol>' +
+          '<p class="g" style="margin-top:6px">解説：' + esc(e.explain || '') + '</p>';
+      } else {
+        d.innerHTML = '<h3>演習' + (k + 1) + '　' + esc(e.title) + '</h3><ol class="g">' + e.goals.map((g) => '<li>' + esc(g) + '</li>').join('') + '</ol>' +
+          '<div class="g" style="margin:8px 0 4px">最初のコード（' + esc(e.sprite) + '）</div>' + B.table(e.starter[e.sprite]) +
+          (e.uses && e.uses.length ? '<div class="g" style="margin:10px 0 4px">左に出る「この課題で使うコード」</div><div style="display:flex;flex-wrap:wrap;gap:10px">' + e.uses.map((u) => '<div style="border:1px solid #EEF0F3;border-radius:8px;padding:6px 8px;display:flex;flex-direction:column;gap:3px">' + B.blocks(u.code) + '<code style="font-size:12px;background:#1E1F23;color:#E6E6E6;border-radius:4px;padding:2px 6px;white-space:pre">' + esc(u.code) + '</code><span class="g">' + esc(u.note) + '</span></div>').join('') + '</div>' : '');
+      }
       box.appendChild(d);
     });
     window.scrollTo(0, 0);
