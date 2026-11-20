@@ -59,6 +59,7 @@
     try { history.replaceState(null, '', '#' + l.id); } catch (err) { /* noop */ }
   }
   pick.addEventListener('change', () => show(Number(pick.value)));
+  window.addEventListener('hashchange', () => { const i = lessons.findIndex((x) => '#' + x.l.id === location.hash); if (i >= 0 && String(i) !== pick.value) { pick.value = String(i); show(i); } });
   const fromHash = lessons.findIndex((x) => '#' + x.l.id === location.hash);
   pick.value = String(Math.max(0, fromHash));
   show(Math.max(0, fromHash));
