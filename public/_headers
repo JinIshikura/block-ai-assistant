@@ -16,3 +16,6 @@
 
 /table/*
   Cache-Control: no-cache
+
+/course/*
+  Cache-Control: no-cache
