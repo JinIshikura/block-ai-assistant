@@ -37,7 +37,7 @@ w.fetch = async (url, opt) => {
 w.localStorage.setItem('blockai:timeLimitOn', 'false');
 w.localStorage.setItem('blockai:level', '1');
 w.localStorage.setItem('blockai:codeLang', '"py"');
-for (const f of ['shim.js', 'login.js', 'codeconv.js', 'editorassist.js', 'app.js']) w.eval(fs.readFileSync(R + f, 'utf8'));
+for (const f of ['shim.js', 'login.js', 'codeconv.js', 'editorassist.js', 'blockview.js', 'app.js']) w.eval(fs.readFileSync(R + f, 'utf8'));
 const root = w.document.getElementById('block-ai-assistant-root').shadowRoot;
 const q = (s) => root.querySelector(s);
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));

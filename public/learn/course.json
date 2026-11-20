@@ -1,83 +1,731 @@
 {
- "version": 1,
+ "version": 2,
  "steps": [
   {
-   "id": "s1",
    "title": "ステップ1　読む",
    "lessons": [
     {
-     "id": "l1",
-     "title": "第1回　スクリプトをPythonで読む",
+     "id": "k1",
+     "title": "第1回　1つのブロックは、コードの1行",
      "slides": [
       {
        "title": "ブロックは、コードでも書ける",
-       "text": "Scratchのスクリプトは、Pythonのコードで表すことができる。左はリンゴが落ちてくるゲームのスクリプト、右はそれをPythonで表したもの。\nブロックの言葉が英語になり、色はブロックのカテゴリーと同じになっている。",
-       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-       "image": "apple-script.png",
-       "caption": "ブロック（リンゴのスクリプト）"
+       "text": "Scratchで作るプログラムは、文字（コード）でも書ける。この教室では Python（パイソン）という言葉で書く。\n左のブロックと右のコードは、同じ行どうしが同じ命令。「10歩動かす」は move(10) になる。",
+       "code": "@when_flag_clicked\ndef script1():\n    move(10)"
       },
       {
-       "title": "ルール1：命令ブロック1つは、コード1行",
-       "text": "「y座標を -5 ずつ変える」は change_y(-5)、「x座標を0、y座標を170にする」は go_to(0, 170) のように、命令ブロック1つがコードの1行になる。",
-       "code": "change_y(-5)\ngo_to(0, 170)"
+       "title": "はじまりの2行",
+       "text": "「旗が押されたとき」は、コードでは2行でセットになる（@when_flag_clicked と def script1():）。\nそのまとまりの中に入る命令は、行の頭にスペースを4つ入れて、右に下げて書く（Tabキーでも下げられる）。",
+       "code": "@when_flag_clicked\ndef script1():\n    say_for(\"こんにちは！\", 2)"
       },
       {
-       "title": "ルール2：イベントブロックは2行",
-       "text": "「緑の旗が押されたとき」のようなイベントブロックは、「@」で始まる行と「def」で始まる行の2行になる。その下の行が、イベントにつながるブロック。",
-       "code": "@when_flag_clicked\ndef script1():"
+       "title": "入れる値は ( ) の中",
+       "text": "ブロックの白いまる（入れる値）は、コードの ( ) の中に書く。値が2つあるときは , で区切る。\n文字は \" \" でかこむ（\"こんにちは！\"）。数はそのまま書く（2、-140）。",
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    say_for(\"こんにちは！\", 2)"
       },
       {
-       "title": "ネコのスクリプトも読んでみよう",
-       "text": "ネコは、矢印キーで左右に動く。「もし〜なら」の行の終わりには「:」があり、その中のブロックは右に下げて書かれている（くわしくは第2回）。\n演習3では、このネコのコードにスクリプトを書き足す。",
-       "image": "cat-script.png",
-       "caption": "ブロック（ネコのスクリプト）",
-       "code": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
-      },
-      {
-       "title": "ルール3：入力欄の値は、かっこの中",
-       "text": "ブロックの入力欄に入れた値は、命令名の後ろのかっこの中に、ブロックと同じ順番で書く。go_to(0, 170) なら、x座標が0、y座標が170。\nこのあとの演習では、コードを書きかえて「判定する」を押す。判定では、プログラムを実際に動かして確かめる。",
-       "code": "go_to(0, 170)\nsay_for(\"こんにちは\", 2)"
+       "title": "この回で使う命令",
+       "text": "go_to は「x座標を〇、y座標を〇にする」。最初の場所にもどすときに使う。\nwait は「〇秒待つ」。",
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    move(10)\n    say_for(\"やあ\", 1)\n    wait(1)"
       }
      ],
      "exercises": [
       {
-       "id": "l1e1",
-       "title": "落ちる速さを2倍にしよう",
+       "id": "k1e1",
+       "title": "ネコを100歩動かそう",
        "project": "catch.sb3",
-       "sprite": "リンゴ",
+       "sprite": "ネコ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    move(10)"
        },
        "goals": [
-        "リンゴが落ちる速さを、いまの2倍にする",
-        "それ以外の動きは変えない"
+        "ネコが100歩動くようにする"
        ],
        "hints": [
-        "リンゴを下に動かしているのは、どの行だろう？",
-        "change_y の かっこの中の数が、1回に動く量。",
-        "いまは1回に5ずつ下がっている。2倍にするには？"
+        "「10歩動かす」は move(10)。",
+        "( ) の中の数が歩数。",
+        "move(10) を move(100) にする。"
        ],
        "checks": [
         {
          "type": "code",
-         "label": "1回に動く量を2倍にしている",
-         "sprite": "リンゴ",
-         "line": "change_y(-10)",
-         "indent": 2,
-         "fail": "change_y の数を見直そう。いまの2倍になっているかな？"
+         "label": "100歩動かしている",
+         "fail": "move の ( ) の中を 100 にしよう。",
+         "line": "move(100)",
+         "indent": 1,
+         "sprite": "ネコ"
         },
         {
          "type": "run",
-         "label": "リンゴが下に落ちていく",
+         "label": "ネコが右へ100歩動く",
          "ms": 1200,
-         "setup": [
+         "expect": [
           {
+           "kind": "final",
            "sprite": "ネコ",
-           "visible": false,
-           "at": 60
+           "prop": "x",
+           "op": ">=",
+           "value": 95
           }
          ],
+         "fail": "ネコが100歩動いていないよ。"
+        }
+       ]
+      },
+      {
+       "id": "k1e2",
+       "title": "言うことを変えよう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    say_for(\"こんにちは！\", 2)"
+       },
+       "goals": [
+        "「よろしくね」と3秒言うようにする"
+       ],
+       "hints": [
+        "say_for の1つめの値が言うこと、2つめが秒数。",
+        "文字は \" \" でかこんだまま書きかえる。",
+        "say_for(\"よろしくね\", 3) にする。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "「よろしくね」と3秒言う",
+         "fail": "say_for(\"よろしくね\", 3) にしよう。\" \" と , を消さないでね。",
+         "line": "say_for(\"よろしくね\", 3)",
+         "indent": 1,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "「よろしくね」と言う",
+         "ms": 1200,
+         "expect": [
+          {
+           "kind": "said",
+           "sprite": "ネコ",
+           "text": "よろしくね"
+          }
+         ],
+         "fail": "「よろしくね」と言わなかったよ。"
+        }
+       ]
+      },
+      {
+       "id": "k1e3",
+       "title": "「1秒待つ」を書きくわえよう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    move(50)\n    # この行に、1秒待つ命令を書こう\n    move(50)"
+       },
+       "goals": [
+        "50歩動いて、1秒待ってから、もう一度50歩動く"
+       ],
+       "hints": [
+        "「〇秒待つ」は wait(〇)。",
+        "# の行は、命令の説明（メモ）。そこを書きかえてよい。",
+        "2つの move(50) のあいだに wait(1) を書く。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "動く→待つ→動くの順",
+         "fail": "move(50) と move(50) のあいだに wait(1) を書こう。",
+         "order": [
+          "move(50)",
+          "wait(1)",
+          "move(50)"
+         ],
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "とちゅうで1秒止まる",
+         "ms": 2200,
+         "expect": [
+          {
+           "kind": "still",
+           "sprite": "ネコ",
+           "prop": "x",
+           "from": 300,
+           "until": 900,
+           "tol": 3
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "x",
+           "op": ">=",
+           "value": 95
+          }
+         ],
+         "fail": "50歩動いたところで1秒止まっていないよ。"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "k2",
+     "title": "第2回　上から順番に動く",
+     "slides": [
+      {
+       "title": "上から1行ずつ動く",
+       "text": "プログラムは、上の行から順番に1行ずつ動く。ブロックを上からつなげたのと同じ。",
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    say_for(\"いくよ\", 1)\n    move(100)\n    say_for(\"ついた！\", 1)"
+      },
+      {
+       "title": "順番を変えると、動きが変わる",
+       "text": "同じ命令でも、順番がちがうとちがう動きになる。下のコードは、「いくよ」と言う前に動いてしまう。",
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    move(100)\n    say_for(\"いくよ\", 1)"
+      },
+      {
+       "title": "向きを変える命令",
+       "text": "point_in_direction(90) は「90度に向ける」（右向き）。\nturn_right(90) は「右に90度回す」、turn_left(90) は「左に90度回す」。",
+       "code": "@when_flag_clicked\ndef script1():\n    point_in_direction(90)\n    turn_right(90)\n    wait(1)\n    turn_left(90)"
+      }
+     ],
+     "exercises": [
+      {
+       "id": "k2e1",
+       "title": "順番を直そう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    move(100)\n    say_for(\"いくよ\", 1)"
+       },
+       "goals": [
+        "「いくよ」と1秒言ってから、100歩動く"
+       ],
+       "hints": [
+        "いまは、動いてから「いくよ」と言っている。",
+        "2つの行の順番を入れかえる。",
+        "say_for(\"いくよ\", 1) を move(100) の上の行にする。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "言ってから動く順番",
+         "fail": "say_for の行を move の行より上にしよう。",
+         "order": [
+          "say_for(\"いくよ\", 1)",
+          "move(100)"
+         ],
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "言っているあいだは動かない",
+         "ms": 2200,
+         "expect": [
+          {
+           "kind": "still",
+           "sprite": "ネコ",
+           "prop": "x",
+           "from": 200,
+           "until": 800,
+           "tol": 3
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "x",
+           "op": ">=",
+           "value": 95
+          }
+         ],
+         "fail": "「いくよ」と言っているあいだに動いているよ。"
+        }
+       ]
+      },
+      {
+       "id": "k2e2",
+       "title": "行って、もどってこよう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    move(100)\n    # ここに、1秒待ってから -100歩動く行を書こう"
+       },
+       "goals": [
+        "100歩動いて、1秒待ってから、-100歩動いてもとの場所にもどる"
+       ],
+       "hints": [
+        "-100歩動くと、反対向きに100歩もどる。",
+        "wait(1) のあとに move(-100) を書く。",
+        "move(100) の下に、wait(1) と move(-100) を1行ずつ。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "-100歩もどっている",
+         "fail": "move(-100) を書こう。",
+         "line": "move(-100)",
+         "indent": 1,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "行ってもどる",
+         "ms": 2200,
+         "expect": [
+          {
+           "kind": "varies",
+           "sprite": "ネコ",
+           "prop": "x",
+           "min": 90,
+           "from": 0
+          },
+          {
+           "kind": "still",
+           "sprite": "ネコ",
+           "prop": "x",
+           "from": 200,
+           "until": 800,
+           "tol": 3
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "x",
+           "op": "<",
+           "value": 5
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "x",
+           "op": ">",
+           "value": -5
+          }
+         ],
+         "fail": "100歩動いて、1秒止まって、もとの場所にもどるようにしよう。"
+        }
+       ]
+      },
+      {
+       "id": "k2e3",
+       "title": "くるっと回ろう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    point_in_direction(90)\n    # ここに、右に90度回る→1秒待つ→左に90度回る を書こう"
+       },
+       "goals": [
+        "右に90度回って、1秒待って、左に90度回ってもとの向きにもどる"
+       ],
+       "hints": [
+        "右に回すのは turn_right、左に回すのは turn_left。",
+        "( ) の中は回る角度。",
+        "turn_right(90)、wait(1)、turn_left(90) の3行。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "右に90度回る",
+         "fail": "turn_right(90) を書こう。",
+         "line": "turn_right(90)",
+         "indent": 1,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "code",
+         "label": "左に90度回る",
+         "fail": "turn_left(90) を書こう。",
+         "line": "turn_left(90)",
+         "indent": 1,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "回って、もとの向きにもどる",
+         "ms": 2200,
+         "expect": [
+          {
+           "kind": "varies",
+           "sprite": "ネコ",
+           "prop": "dir",
+           "min": 80,
+           "from": 0
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "dir",
+           "op": ">",
+           "value": 85
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "dir",
+           "op": "<",
+           "value": 95
+          }
+         ],
+         "fail": "右に回って、1秒後にもとの向き（90度）にもどるようにしよう。"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "k3",
+     "title": "第3回　くり返しと字下げ",
+     "slides": [
+      {
+       "title": "「ずっと」は while True:",
+       "text": "「ずっと」は while True: と書く。最後の : （コロン）をわすれずに。",
+       "code": "@when_flag_clicked\ndef script1():\n    point_in_direction(90)\n    while True:\n        turn_right(15)\n        wait(0.1)"
+      },
+      {
+       "title": "字下げ＝くり返しの中",
+       "text": "while True: の次の行から、もう1段（スペース4つ）下げた行が、くり返しの中に入る。Scratchで「ずっと」の口の中にブロックを入れるのと同じ。\n字下げをもどした行は、くり返しの外になる。",
+       "code": "@when_flag_clicked\ndef script1():\n    while True:\n        turn_right(15)\n        wait(0.1)"
+      },
+      {
+       "title": "「〇回繰り返す」は for",
+       "text": "「3回繰り返す」は for i in range(3): と書く。range(3) の 3 が回数。\ni は「いま何回目か」が入る変数（いまは気にしなくてよい）。",
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(-150, -140)\n    for i in range(3):\n        move(50)\n        wait(0.5)"
+      }
+     ],
+     "exercises": [
+      {
+       "id": "k3e1",
+       "title": "ずっと回そう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    point_in_direction(90)\n    turn_right(15)\n    wait(0.1)"
+       },
+       "goals": [
+        "turn_right と wait を「ずっと」の中に入れて、ずっと回るようにする"
+       ],
+       "hints": [
+        "「ずっと」は while True:。",
+        "point_in_direction の次の行に while True: を書く。",
+        "turn_right と wait の行の頭に、スペースを4つ足して1段下げる。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "「ずっと」を使っている",
+         "fail": "while True: を書こう。",
+         "line": "while True:",
+         "indent": 1,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "code",
+         "label": "回る命令がくり返しの中にある",
+         "fail": "turn_right(15) を1段下げて、くり返しの中に入れよう。",
+         "line": "turn_right(15)",
+         "indent": 2,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "ずっと回り続ける",
+         "ms": 2500,
+         "expect": [
+          {
+           "kind": "varies",
+           "sprite": "ネコ",
+           "prop": "dir",
+           "min": 30,
+           "from": 1000
+          }
+         ],
+         "fail": "ネコがずっと回っていないよ。"
+        }
+       ]
+      },
+      {
+       "id": "k3e2",
+       "title": "3回くり返しで短くしよう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(-150, -140)\n    move(50)\n    wait(0.5)\n    move(50)\n    wait(0.5)\n    move(50)\n    wait(0.5)"
+       },
+       "goals": [
+        "for を使って、move(50) と wait(0.5) を1回ずつだけ書く",
+        "動きは同じ（50歩ずつ3回）"
+       ],
+       "hints": [
+        "同じ2行が3回ある。",
+        "for i in range(3): の中に move(50) と wait(0.5) を入れる。",
+        "残りの4行は消す。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "3回のくり返しを使っている",
+         "fail": "for i in range(3): を書こう。",
+         "line": "for i in range(0, 3):",
+         "indent": 1,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "code",
+         "label": "move(50) は1回だけ",
+         "fail": "move(50) は、くり返しの中に1回だけ書こう。",
+         "line": "move(50)",
+         "count": 1,
+         "indent": 2,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "50歩ずつ3回動く",
+         "ms": 2500,
+         "expect": [
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "x",
+           "op": ">",
+           "value": -5
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "x",
+           "op": "<",
+           "value": 5
+          }
+         ],
+         "fail": "150歩動いていないよ。"
+        }
+       ]
+      },
+      {
+       "id": "k3e3",
+       "title": "くり返しの中に入れよう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, 0)\n    point_in_direction(90)\n    for i in range(4):\n        move(50)\n    turn_right(90)\n    wait(0.5)"
+       },
+       "goals": [
+        "「50歩動く→右に90度回る→0.5秒待つ」を4回くり返して、四角を書くように動く",
+        "もとの場所・もとの向きにもどってくる"
+       ],
+       "hints": [
+        "いまは move(50) だけがくり返しの中。",
+        "turn_right と wait も1段下げる。",
+        "turn_right(90) と wait(0.5) の行の頭にスペースを4つ足す。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "回る命令がくり返しの中にある",
+         "fail": "turn_right(90) を1段下げよう。",
+         "line": "turn_right(90)",
+         "indent": 2,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "四角に動いて、もどってくる",
+         "ms": 3000,
+         "expect": [
+          {
+           "kind": "varies",
+           "sprite": "ネコ",
+           "prop": "y",
+           "min": 40,
+           "from": 0
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "x",
+           "op": "<",
+           "value": 5
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "x",
+           "op": ">",
+           "value": -5
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "dir",
+           "op": ">",
+           "value": 85
+          },
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "dir",
+           "op": "<",
+           "value": 95
+          }
+         ],
+         "fail": "もとの場所・もとの向きにもどってこないよ。"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "k4",
+     "title": "第4回　もし〜なら",
+     "slides": [
+      {
+       "title": "「もし〜なら」は if",
+       "text": "「もし〈 〉なら」は if 条件: と書く。条件が正しいときだけ、1段下げた行が動く。\nキーで動かすときは、「ずっと」の中に「もし」を入れる。",
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)"
+      },
+      {
+       "title": "キーとx座標",
+       "text": "key_pressed(\"右向き矢印\") は「右向き矢印キーが押された」。キーの名前は \"右向き矢印\" \"左向き矢印\" \"上向き矢印\" \"下向き矢印\" \"スペース\" など。\nchange_x(10) は「x座標を10ずつ変える」（右へ）。左は change_x(-10)。",
+       "code": "@when_flag_clicked\ndef script1():\n    while True:\n        if key_pressed(\"スペース\"):\n            say_for(\"ニャー\", 1)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+      },
+      {
+       "title": "上下と「触れた」",
+       "text": "change_y(-5) は「y座標を-5ずつ変える」（下へ）。上へは ＋。\ntouching(\"ネコ\") は「ネコに触れた」。リンゴがネコに触れたら、上にもどす例。",
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            go_to(0, 170)"
+      }
+     ],
+     "exercises": [
+      {
+       "id": "k4e1",
+       "title": "左にも動かそう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)"
+       },
+       "goals": [
+        "左向き矢印キーを押すと、ネコが左に動く"
+       ],
+       "hints": [
+        "右のときと同じ形の if を、もう1つ書く。",
+        "if key_pressed(\"左向き矢印\"): を、右の if と同じ深さに。",
+        "その中に change_x(-10) を1段下げて書く。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "左向き矢印キーで分けている",
+         "fail": "if key_pressed(\"左向き矢印\"): を、右の if と同じ深さに書こう。",
+         "line": "if key_pressed(\"左向き矢印\"):",
+         "indent": 2,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "左キーで左に動く",
+         "ms": 1600,
+         "expect": [
+          {
+           "kind": "decrease",
+           "sprite": "ネコ",
+           "prop": "x",
+           "min": 30
+          }
+         ],
+         "fail": "左向き矢印キーを押しても、左に動かないよ。",
+         "keys": [
+          {
+           "key": "左向き矢印",
+           "at": 300,
+           "hold": 600
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "id": "k4e2",
+       "title": "スペースで鳴こう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)"
+       },
+       "goals": [
+        "スペースキーを押すと、「ニャー」と1秒言う"
+       ],
+       "hints": [
+        "if key_pressed(\"スペース\"): を、右の if と同じ深さに書く。",
+        "その中に say_for(\"ニャー\", 1)。",
+        "字下げは、if が2段、say_for が3段。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "スペースキーで分けている",
+         "fail": "if key_pressed(\"スペース\"): を書こう。",
+         "line": "if key_pressed(\"スペース\"):",
+         "indent": 2,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "スペースで「ニャー」",
+         "ms": 1600,
+         "expect": [
+          {
+           "kind": "said",
+           "sprite": "ネコ",
+           "text": "ニャー"
+          }
+         ],
+         "fail": "スペースキーを押しても「ニャー」と言わないよ。",
+         "keys": [
+          {
+           "key": "space",
+           "at": 300,
+           "hold": 200
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "id": "k4e3",
+       "title": "キャッチしたら上にもどそう",
+       "project": "catch.sb3",
+       "sprite": "リンゴ",
+       "starter": {
+        "リンゴ": "@when_flag_clicked\ndef script1():\n    go_to(0, 170)\n    while True:\n        change_y(-5)"
+       },
+       "goals": [
+        "ずっと下に落ちる。ネコに触れたら、上（x座標0、y座標170）にもどす"
+       ],
+       "hints": [
+        "「ネコに触れた」は touching(\"ネコ\")。",
+        "change_y(-5) と同じ深さに if touching(\"ネコ\"): を書く。",
+        "その中に go_to(0, 170)。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "ネコに触れたかで分けている",
+         "fail": "if touching(\"ネコ\"): を、change_y と同じ深さに書こう。",
+         "line": "if touching(\"ネコ\"):",
+         "indent": 2,
+         "sprite": "リンゴ"
+        },
+        {
+         "type": "code",
+         "label": "触れたら上にもどす",
+         "fail": "if の中に go_to(0, 170) を書こう。",
+         "line": "go_to(0, 170)",
+         "indent": 3,
+         "sprite": "リンゴ"
+        },
+        {
+         "type": "run",
+         "label": "リンゴが落ちていく",
+         "ms": 1500,
          "expect": [
           {
            "kind": "decrease",
@@ -86,328 +734,227 @@
            "min": 40
           }
          ],
-         "fail": "リンゴが下に動いていないよ。"
-        }
-       ]
-      },
-      {
-       "id": "l1e2",
-       "title": "得点が2ずつ増えるようにしよう",
-       "project": "catch.sb3",
-       "sprite": "リンゴ",
-       "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
-       },
-       "goals": [
-        "リンゴがネコに触れたら、得点が2ずつ増えるようにする"
-       ],
-       "hints": [
-        "得点を増やしているのは、どの行だろう？",
-        "「得点 = 得点 + 1」は、得点に1を足すという意味。",
-        "足す数を変えてみよう。"
-       ],
-       "checks": [
-        {
-         "type": "code",
-         "label": "得点に2を足している",
-         "sprite": "リンゴ",
-         "line": "得点 = 得点 + 2",
-         "indent": 3,
-         "fail": "得点を増やす行で、足す数を見直そう。"
-        },
-        {
-         "type": "run",
-         "label": "ネコに触れると得点が2ずつ増える",
-         "ms": 2500,
-         "setup": [
-          {
-           "sprite": "ネコ",
-           "follow": "リンゴ",
-           "dy": -25,
-           "every": 40,
-           "at": 200
-          }
-         ],
-         "expect": [
-          {
-           "kind": "varSteps",
-           "name": "得点",
-           "step": 2,
-           "min": 2
-          }
-         ],
-         "fail": "ネコに触れたときの得点の増え方が、2ずつになっていないよ。"
-        }
-       ]
-      },
-      {
-       "id": "l1e3",
-       "title": "スペースキーで話すスクリプトを作ろう",
-       "project": "catch.sb3",
-       "sprite": "ネコ",
-       "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
-       },
-       "goals": [
-        "ネコのコードに、スクリプトを1つ書き足す",
-        "スペースキーが押されたら、ネコが「いくぞ！」と2秒言う"
-       ],
-       "hints": [
-        "新しいスクリプトは、イベントの2行（@ の行と def の行）から始まる。",
-        "スペースキーのイベントは @when_key_pressed(\"スペース\")。def の名前は script2 などにしよう。",
-        "「〜と2秒言う」は say_for(言うこと, 秒数)。def の下の行は4文字右に下げる。"
-       ],
-       "checks": [
-        {
-         "type": "code",
-         "label": "スペースキーのイベントがある",
-         "sprite": "ネコ",
-         "line": "@when_key_pressed(\"スペース\")",
-         "indent": 0,
-         "fail": "スペースキーのイベントの行を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "「いくぞ！」と2秒言う命令がある",
-         "sprite": "ネコ",
-         "line": "say_for(\"いくぞ！\", 2)",
-         "indent": 1,
-         "fail": "言うことの文字（いくぞ！）と秒数、行の下げ方を見直そう。"
-        },
-        {
-         "type": "run",
-         "label": "スペースキーを押すと「いくぞ！」と言う",
-         "ms": 1500,
-         "keys": [
-          {
-           "key": "space",
-           "at": 400,
-           "hold": 200
-          }
-         ],
-         "expect": [
-          {
-           "kind": "said",
-           "sprite": "ネコ",
-           "text": "いくぞ"
-          }
-         ],
-         "fail": "スペースキーを押しても、ネコが「いくぞ！」と言わなかったよ。"
+         "fail": "リンゴが落ちていないよ。"
         }
        ]
       }
      ]
     },
     {
-     "id": "l2",
-     "title": "第2回　字下げは、ブロックの入れ子",
+     "id": "k5",
+     "title": "第5回　変数",
      "slides": [
       {
-       "title": "字下げ＝ブロックの入れ子",
-       "text": "「ずっと」や「もし〜なら」のようなC形ブロックの中に入っているブロックは、コードでは行の先頭を右に下げて書く。これを字下げという。左のブロックと右のコードで、入れ子と字下げを見比べよう。",
-       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-       "image": "apple-script.png",
-       "caption": "ブロック（「ずっと」と「もし」の中に、ブロックが入っている）"
+       "title": "変数は、名前のついた箱",
+       "text": "得点 = 0 は「得点を0にする」。= は「右の値を、左の変数に入れる」という意味。\n変数がまだなければ、自動で作られてステージに表示される。",
+       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0"
       },
       {
-       "title": "ルール4：「:」の次の行は4文字下げる",
-       "text": "while True: や if 〜: のように「:」で終わる行の次の行から、4文字分右に下げる。下がっている深さを見れば、どのC形ブロックの中にあるかがわかる。",
-       "code": "while True:\n    change_y(-5)"
+       "title": "1ずつ変える",
+       "text": "得点 = 得点 + 1 は「得点を1ずつ変える」。右の 得点 + 1 を計算して、左の 得点 に入れなおす。",
+       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    while True:\n        if key_pressed(\"スペース\"):\n            得点 = 得点 + 1\n            wait(0.3)"
       },
       {
-       "title": "ルール5：字下げを戻すと、C形ブロックの外",
-       "text": "字下げを1段戻した行は、そのC形ブロックの下につながるブロックになる。同じ命令でも、どこまで下げるかで動きが変わる。",
-       "code": "while True:\n    if touching(\"ネコ\"):\n        得点 = 得点 + 1\n    change_y(-5)"
-      },
-      {
-       "title": "ルール6：「=」は、右の結果を左の変数に入れる",
-       "text": "得点 = 得点 + 1 は、算数の式ではない。右側を計算して（得点が3なら 3 + 1 = 4）、その結果を左側の変数に入れる、という意味。",
-       "code": "得点 = 0\n得点 = 得点 + 1"
+       "title": "変数の値を言わせる",
+       "text": "say_for の言うことに、変数を書くこともできる（\" \" ではかこまない）。",
+       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    得点 = 得点 + 1\n    say_for(得点, 1)"
       }
      ],
      "exercises": [
       {
-       "id": "l2e1",
-       "title": "落ちたリンゴを上に戻そう",
+       "id": "k5e1",
+       "title": "スペースで得点をふやそう",
        "project": "catch.sb3",
-       "sprite": "リンゴ",
+       "sprite": "ネコ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+        "ネコ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    while True:\n        if key_pressed(\"スペース\"):\n            wait(0.3)"
        },
        "goals": [
-        "リンゴが下まで落ちたら（y座標が -170 より小さくなったら）、上のランダムな位置に戻す",
-        "戻す処理は「ずっと」の中（2段目）に書く",
-        "ネコに触れたときの動きは、そのまま"
+        "スペースキーを押すたびに、得点が1ふえる"
        ],
        "hints": [
-        "y座標は y_position() で調べられる。「〜より小さい」は <。",
-        "if y_position() < -170: の下に、上に戻す命令を書く。上に戻す命令は、ネコに触れたときと同じ。",
-        "if の行は change_y の行と同じ深さ（2段目）にそろえる。ネコの if の中に入れないこと。"
+        "「得点を1ずつ変える」は 得点 = 得点 + 1。",
+        "if の中（wait と同じ深さ）に書く。",
+        "wait(0.3) の上の行に 得点 = 得点 + 1。"
        ],
        "checks": [
         {
          "type": "code",
-         "label": "y座標を調べる if が「ずっと」の中（2段目）にある",
-         "sprite": "リンゴ",
-         "line": "if y_position() < -170:",
-         "indent": 2,
-         "fail": "y座標を調べる if の書き方と、字下げの深さ（2段目）を見直そう。"
+         "label": "得点を1ずつ変えている",
+         "fail": "得点 = 得点 + 1 を、if の中に書こう。",
+         "line": "得点 = 得点 + 1",
+         "indent": 3,
+         "sprite": "ネコ"
         },
         {
          "type": "run",
-         "label": "下まで落ちたリンゴが上に戻る",
-         "ms": 5500,
-         "setup": [
-          {
-           "sprite": "ネコ",
-           "visible": false,
-           "at": 60
-          }
-         ],
+         "label": "スペースを1回押すと1点",
+         "ms": 1500,
          "expect": [
           {
-           "kind": "returnAfter",
-           "sprite": "リンゴ",
-           "prop": "y",
-           "below": -60,
-           "above": 120
+           "kind": "var",
+           "name": "得点",
+           "op": "==",
+           "value": 1
           }
          ],
-         "fail": "リンゴが下まで落ちても、上に戻らなかったよ。if がどの C形ブロックの中にあるか、字下げを見よう。"
+         "fail": "スペースキーを1回押したのに、得点が1にならないよ。",
+         "keys": [
+          {
+           "key": "space",
+           "at": 300,
+           "hold": 200
+          }
+         ]
         }
        ]
       },
       {
-       "id": "l2e2",
-       "title": "ミスの回数を数えよう",
+       "id": "k5e2",
+       "title": "2点ずつふやそう",
        "project": "catch.sb3",
-       "sprite": "リンゴ",
+       "sprite": "ネコ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if y_position() < -170:\n            go_to(random(-200, 200), 170)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+        "ネコ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    while True:\n        if key_pressed(\"スペース\"):\n            得点 = 得点 + 1\n            wait(0.3)"
        },
        "goals": [
-        "変数「ミス」を使う",
-        "緑の旗が押されたら、ミスを0にする",
-        "リンゴが下まで落ちるたびに、ミスを1増やす"
+        "スペースキーを押すたびに、得点が2ふえる"
        ],
        "hints": [
-        "変数に値を入れるのは「変数名 = 値」。得点 = 0 を参考にしよう。",
-        "ミスを1増やすのは、得点を増やす行と同じ形。",
-        "ミスが増えるのは「下まで落ちたとき」。どの if の中に書けばいいかな？"
+        "ふえる数は + のうしろの数。",
+        "+ 1 を + 2 にする。",
+        "得点 = 得点 + 2。"
        ],
        "checks": [
         {
          "type": "code",
-         "label": "はじめにミスを0にしている",
-         "sprite": "リンゴ",
-         "line": "ミス = 0",
-         "indent": 1,
-         "fail": "緑の旗のすぐ下（1段目）で、ミスを0にしよう。"
-        },
-        {
-         "type": "code",
-         "label": "ミスを1増やしている",
-         "sprite": "リンゴ",
-         "line": "ミス = ミス + 1",
+         "label": "得点を2ずつ変えている",
+         "fail": "得点 = 得点 + 2 にしよう。",
+         "line": "得点 = 得点 + 2",
          "indent": 3,
-         "fail": "ミスを1増やす行の書き方と、字下げの深さを見直そう。"
+         "sprite": "ネコ"
         },
         {
          "type": "run",
-         "label": "下まで落ちるとミスが増える",
-         "ms": 4500,
-         "setup": [
-          {
-           "sprite": "ネコ",
-           "visible": false,
-           "at": 60
-          }
-         ],
+         "label": "スペースを1回押すと2点",
+         "ms": 1500,
          "expect": [
           {
            "kind": "var",
-           "name": "ミス",
-           "op": ">=",
-           "value": 1
+           "name": "得点",
+           "op": "==",
+           "value": 2
           }
          ],
-         "fail": "リンゴが下まで落ちても、ミスが増えなかったよ。"
+         "fail": "スペースキーを1回押したのに、得点が2にならないよ。",
+         "keys": [
+          {
+           "key": "space",
+           "at": 300,
+           "hold": 200
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "id": "k5e3",
+       "title": "得点を言おう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    while True:\n        if key_pressed(\"スペース\"):\n            得点 = 得点 + 1\n            wait(0.3)"
+       },
+       "goals": [
+        "得点がふえたら、ネコがいまの得点を1秒言う"
+       ],
+       "hints": [
+        "say_for に変数を書くと、その値を言う。",
+        "得点 = 得点 + 1 の次の行に書く。",
+        "say_for(得点, 1)（得点は \" \" でかこまない）。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "得点を言っている",
+         "fail": "say_for(得点, 1) を、得点 = 得点 + 1 の次の行に書こう。",
+         "line": "say_for(得点, 1)",
+         "indent": 3,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "スペースで「1」と言う",
+         "ms": 1800,
+         "expect": [
+          {
+           "kind": "said",
+           "sprite": "ネコ",
+           "text": "1"
+          }
+         ],
+         "fail": "スペースキーを押したのに、得点を言わなかったよ。",
+         "keys": [
+          {
+           "key": "space",
+           "at": 300,
+           "hold": 200
+          }
+         ]
         }
        ]
       }
      ]
     },
     {
-     "id": "r1",
+     "id": "m1",
      "title": "ステップ1　まとめテスト",
      "slides": [
       {
-       "title": "ステップ1のまとめ",
-       "text": "ルール1：命令ブロック1つは、コード1行。\nルール2：イベントブロックは「@」の行と「def」の行の2行。\nルール3：入力欄の値は、命令名の後ろのかっこの中に、同じ順で書く。\nルール4：「:」で終わる行の次の行は、4文字右に下げる。\nルール5：字下げを戻すと、C形ブロックの外（下）につながる。\nルール6：「=」は、右の結果を左の変数に入れる。\nこのテストは、ヒントを見ないで挑戦しよう。"
+       "title": "ランダムな数 random",
+       "text": "random(-200, 200) は「-200 から 200 までの乱数」。毎回ちがう数になる。\ngo_to(random(-200, 200), 170) なら、上のどこかランダムな場所へ行く。",
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(random(-200, 200), 170)"
+      },
+      {
+       "title": "比べる < と >",
+       "text": "y_position() は「いまのy座標」。\ny_position() < -170 は「y座標が -170 より小さい」（下に行きすぎた）。> は「より大きい」。口が開いている方が大きい。",
+       "code": "@when_flag_clicked\ndef script1():\n    if y_position() < -170:\n        go_to(0, 170)\n    if y_position() > 170:\n        say_for(\"上に行きすぎ\", 1)"
+      },
+      {
+       "title": "キャッチゲームを読もう",
+       "text": "ここまでの命令でできたリンゴのプログラム。1行ずつ、ブロックと見比べて読んでみよう。",
+       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if y_position() < -170:\n            go_to(random(-200, 200), 170)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)"
       }
      ],
      "exercises": [
       {
-       "id": "r1e1",
-       "title": "リンゴのゲームを仕上げよう",
+       "id": "m1e1",
+       "title": "リンゴを速くしよう",
        "project": "catch.sb3",
        "sprite": "リンゴ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if y_position() < -170:\n            go_to(random(-200, 200), 170)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)"
        },
        "goals": [
-        "リンゴの落ちる速さを、1回に4ずつにする",
-        "緑の旗が押されたら、変数「ミス」を0にする",
-        "リンゴが下まで落ちたら（y座標が -170 より小さくなったら）、上のランダムな位置に戻し、ミスを1増やす",
-        "ネコに触れたときの動きは、そのまま"
+        "リンゴの落ちる速さを2倍にする",
+        "ほかの動きは変えない"
        ],
        "hints": [
-        "4つの目標を、1つずつ順番に直していこう。",
-        "ミスの行は、得点の行を参考にしよう。",
-        "下まで落ちたかを調べる if は「ずっと」の中（2段目）、その中の命令は3段目。"
+        "落ちる速さを決めているのは change_y の数。"
        ],
        "checks": [
         {
          "type": "code",
-         "label": "落ちる速さが1回に4",
-         "sprite": "リンゴ",
-         "line": "change_y(-4)",
+         "label": "1回に動く量を2倍にしている",
+         "fail": "change_y の数を見直そう。いまの2倍になっているかな？",
+         "line": "change_y(-10)",
          "indent": 2,
-         "fail": "change_y の数を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "はじめにミスを0にしている",
-         "sprite": "リンゴ",
-         "line": "ミス = 0",
-         "indent": 1,
-         "fail": "緑の旗のすぐ下（1段目）で、ミスを0にしよう。"
-        },
-        {
-         "type": "code",
-         "label": "下まで落ちたかを調べる if が2段目にある",
-         "sprite": "リンゴ",
-         "line": "if y_position() < -170:",
-         "indent": 2,
-         "fail": "y座標を調べる if の書き方と、字下げの深さ（2段目）を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "ミスを1増やしている",
-         "sprite": "リンゴ",
-         "line": "ミス = ミス + 1",
-         "indent": 3,
-         "fail": "ミスを1増やす行の書き方と、字下げの深さを見直そう。"
+         "sprite": "リンゴ"
         },
         {
          "type": "run",
-         "label": "下まで落ちたリンゴが上に戻る",
-         "ms": 7000,
+         "label": "速く落ちて、上にもどる",
+         "ms": 5000,
          "expect": [
           {
            "kind": "returnAfter",
@@ -417,19 +964,47 @@
            "above": 120
           }
          ],
-         "fail": "リンゴが下まで落ちても、上に戻らなかったよ。",
-         "setup": [
-          {
-           "sprite": "ネコ",
-           "visible": false,
-           "at": 60
-          }
-         ]
+         "fail": "リンゴが下まで落ちて上にもどっていないよ。"
+        }
+       ]
+      },
+      {
+       "id": "m1e2",
+       "title": "ミスを数えよう",
+       "project": "catch.sb3",
+       "sprite": "リンゴ",
+       "starter": {
+        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if y_position() < -170:\n            go_to(random(-200, 200), 170)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)"
+       },
+       "goals": [
+        "変数「ミス」を使う",
+        "旗が押されたら、ミスを0にする",
+        "リンゴが下まで落ちるたびに、ミスを1ふやす"
+       ],
+       "hints": [
+        "得点と同じ書き方で、ミスの変数を作る。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "ミスを0にしている",
+         "fail": "得点 = 0 の近くに ミス = 0 を書こう。",
+         "line": "ミス = 0",
+         "indent": 1,
+         "sprite": "リンゴ"
+        },
+        {
+         "type": "code",
+         "label": "ミスを1ずつふやしている",
+         "fail": "下に落ちたとき（y座標が -170 より下の if の中）に ミス = ミス + 1。",
+         "line": "ミス = ミス + 1",
+         "indent": 3,
+         "sprite": "リンゴ"
         },
         {
          "type": "run",
-         "label": "下まで落ちるとミスが増える",
-         "ms": 7000,
+         "label": "落ちるとミスがふえる",
+         "ms": 4500,
          "expect": [
           {
            "kind": "var",
@@ -438,109 +1013,7 @@
            "value": 1
           }
          ],
-         "fail": "リンゴが下まで落ちても、ミスが増えなかったよ。",
-         "setup": [
-          {
-           "sprite": "ネコ",
-           "visible": false,
-           "at": 60
-          }
-         ]
-        }
-       ]
-      },
-      {
-       "id": "r1e2",
-       "title": "ネコのスクリプトを書き足そう",
-       "project": "catch.sb3",
-       "sprite": "ネコ",
-       "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
-       },
-       "goals": [
-        "ネコの動く速さを、左右とも1回に15にする",
-        "スペースキーが押されたら、ネコが「がんばれ！」と1秒言うスクリプトを書き足す"
-       ],
-       "hints": [
-        "change_x の数を2か所とも直そう。左に動くほうはマイナス。",
-        "新しいスクリプトは @when_key_pressed(\"スペース\") と def の2行から。",
-        "say_for(言うこと, 秒数) を、def の下に4文字下げて書く。"
-       ],
-       "checks": [
-        {
-         "type": "code",
-         "label": "右に1回15動く",
-         "sprite": "ネコ",
-         "line": "change_x(15)",
-         "indent": 3,
-         "fail": "右向き矢印のときの change_x を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "左に1回15動く",
-         "sprite": "ネコ",
-         "line": "change_x(-15)",
-         "indent": 3,
-         "fail": "左向き矢印のときの change_x を見直そう（マイナス）。"
-        },
-        {
-         "type": "code",
-         "label": "スペースキーのイベントがある",
-         "sprite": "ネコ",
-         "line": "@when_key_pressed(\"スペース\")",
-         "indent": 0,
-         "fail": "スペースキーのイベントの行を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "「がんばれ！」と1秒言う",
-         "sprite": "ネコ",
-         "line": "say_for(\"がんばれ！\", 1)",
-         "indent": 1,
-         "fail": "言うことの文字と秒数、行の下げ方を見直そう。"
-        },
-        {
-         "type": "run",
-         "label": "右向き矢印で右に動く",
-         "ms": 1500,
-         "expect": [
-          {
-           "kind": "increase",
-           "sprite": "ネコ",
-           "prop": "x",
-           "min": 40,
-           "from": 200
-          }
-         ],
-         "fail": "右向き矢印を押しても、ネコが右に動かなかったよ。",
-         "keys": [
-          {
-           "key": "右向き矢印",
-           "at": 400,
-           "hold": 700
-          }
-         ]
-        },
-        {
-         "type": "run",
-         "label": "スペースキーで「がんばれ！」と言う",
-         "ms": 1500,
-         "expect": [
-          {
-           "kind": "said",
-           "sprite": "ネコ",
-           "text": "がんばれ"
-          }
-         ],
-         "fail": "スペースキーを押しても、ネコが「がんばれ！」と言わなかったよ。",
-         "keys": [
-          {
-           "key": "space",
-           "at": 400,
-           "hold": 200
-          }
-         ]
+         "fail": "リンゴが下に落ちたのに、ミスがふえていないよ。"
         }
        ]
       }
@@ -549,181 +1022,111 @@
    ]
   },
   {
-   "id": "s2",
    "title": "ステップ2　直す",
    "lessons": [
     {
-     "id": "l3",
-     "title": "第3回　数字と条件を変える",
+     "id": "k6",
+     "title": "第6回　記号のまちがいを直す",
      "slides": [
       {
-       "title": "「=」と「==」はちがう",
-       "text": "「=」は、右の結果を左の変数に入れる（ルール6）。\n「==」は、左と右が同じかどうかを比べる。if の中で「同じなら」と書くときは「==」を使う。",
-       "code": "得点 = 0\nif 得点 == 5:\n    print(\"クリア！\")"
+       "title": "= と == はちがう",
+       "text": "= は「入れる」（得点 = 0 は得点を0にする）。== は「比べる」（得点 == 3 は「得点 = 3」の条件）。\nif のうしろで比べるときは、かならず == を使う。",
+       "code": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    while True:\n        if key_pressed(\"スペース\"):\n            得点 = 得点 + 1\n            wait(0.3)\n        if 得点 == 3:\n            say_for(\"クリア！\", 2)"
       },
       {
-       "title": "比べる記号",
-       "text": "「<」は小さい、「>」は大きい、「==」は同じ。Scratchの演算ブロック（緑）の「〈 < 〉」「〈 > 〉」「〈 = 〉」と同じ。\nif y_position() < -170: は「y座標が -170 より小さいなら」という意味。",
-       "code": "if y_position() < -170:\n    go_to(random(-200, 200), 170)"
-      },
-      {
-       "title": "「言う」は print",
-       "text": "「〜と言う」ブロック（ずっと言い続ける）は、Pythonでは print になる。ふつうのPythonでも、画面に文字を出すときは print を使う。\n数字や記号を1つ変えるだけで、プログラムの動きは大きく変わる。",
-       "code": "print(\"クリア！\")\nsay_for(\"いくぞ！\", 2)"
+       "title": "< と > の向き",
+       "text": "< と > は、口が開いている方が大きい。y_position() < -170 は「y座標が -170 より小さい」。\n向きをまちがえると、正反対の意味になる。",
+       "code": "@when_flag_clicked\ndef script1():\n    if y_position() < -170:\n        go_to(0, 170)"
       }
      ],
      "exercises": [
       {
-       "id": "l3e1",
-       "title": "ネコの動く速さを変えよう",
+       "id": "k6e1",
+       "title": "クリアと言わせよう",
        "project": "catch.sb3",
        "sprite": "ネコ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+        "ネコ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    while True:\n        if key_pressed(\"スペース\"):\n            得点 = 得点 + 1\n            wait(0.3)\n        if 得点 = 3:\n            say_for(\"クリア！\", 2)"
        },
        "goals": [
-        "ネコの動く速さを、左右とも1回に15にする"
+        "得点が3になったら「クリア！」と言うようにする（エラーを直す）"
        ],
        "hints": [
-        "ネコを動かしているのは change_x の行。",
-        "2か所あるよ。右向き矢印と左向き矢印。",
-        "左に動くほうはマイナスの数。"
+        "エラーが出ている行を見よう。",
+        "比べるときの記号は？",
+        "if 得点 = 3: を if 得点 == 3: にする。"
        ],
        "checks": [
         {
          "type": "code",
-         "label": "右に1回15動く",
-         "sprite": "ネコ",
-         "line": "change_x(15)",
-         "indent": 3,
-         "fail": "右向き矢印のときの change_x を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "左に1回15動く",
-         "sprite": "ネコ",
-         "line": "change_x(-15)",
-         "indent": 3,
-         "fail": "左向き矢印のときの change_x を見直そう（マイナス）。"
-        },
-        {
-         "type": "run",
-         "label": "右向き矢印で右に動く",
-         "ms": 1500,
-         "expect": [
-          {
-           "kind": "increase",
-           "sprite": "ネコ",
-           "prop": "x",
-           "min": 40,
-           "from": 200
-          }
-         ],
-         "fail": "右向き矢印を押しても、ネコが右に動かなかったよ。",
-         "keys": [
-          {
-           "key": "右向き矢印",
-           "at": 400,
-           "hold": 700
-          }
-         ]
-        }
-       ]
-      },
-      {
-       "id": "l3e2",
-       "title": "得点が5になったら「クリア！」と言おう",
-       "project": "catch.sb3",
-       "sprite": "リンゴ",
-       "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
-       },
-       "goals": [
-        "「ずっと」の中で、得点が5になったかを調べる",
-        "得点が5なら、リンゴが「クリア！」と言う"
-       ],
-       "hints": [
-        "「同じかどうか」を比べるのは「==」。",
-        "if 得点 == 5: の下に、言う命令を書く。",
-        "「〜と言う」は print(\"言うこと\")。if は2段目、print は3段目。"
-       ],
-       "checks": [
-        {
-         "type": "code",
-         "label": "得点が5かを調べている",
-         "sprite": "リンゴ",
-         "line": "if 得点 == 5:",
+         "label": "== で比べている",
+         "fail": "if 得点 == 3: にしよう（= ではなく ==）。",
+         "line": "if 得点 == 3:",
          "indent": 2,
-         "fail": "if の書き方（比べるのは ==）と、字下げの深さ（2段目）を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "「クリア！」と言う",
-         "sprite": "リンゴ",
-         "line": "print(\"クリア！\")",
-         "indent": 3,
-         "fail": "print の中の文字と、字下げの深さ（3段目）を見直そう。"
+         "sprite": "ネコ"
         },
         {
          "type": "run",
-         "label": "得点が5になると「クリア！」と言う",
-         "ms": 1500,
+         "label": "3回押すと「クリア！」",
+         "ms": 3500,
          "expect": [
           {
            "kind": "said",
-           "sprite": "リンゴ",
+           "sprite": "ネコ",
            "text": "クリア"
           }
          ],
-         "fail": "得点を5にしても、リンゴが「クリア！」と言わなかったよ。",
-         "setup": [
+         "fail": "スペースを3回押したのに「クリア！」と言わないよ。",
+         "keys": [
           {
-           "sprite": "ネコ",
-           "visible": false,
-           "at": 60
+           "key": "space",
+           "at": 300,
+           "hold": 150
           },
           {
-           "variable": "得点",
-           "value": 5,
-           "at": 400
+           "key": "space",
+           "at": 800,
+           "hold": 150
+          },
+          {
+           "key": "space",
+           "at": 1300,
+           "hold": 150
           }
          ]
         }
-       ]
+       ],
+       "brokenStarter": true
       },
       {
-       "id": "l3e3",
-       "title": "条件の向きを直そう",
+       "id": "k6e2",
+       "title": "向きを直そう",
        "project": "catch.sb3",
        "sprite": "リンゴ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if y_position() > -170:\n            go_to(random(-200, 200), 170)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if y_position() > -170:\n            go_to(random(-200, 200), 170)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)"
        },
        "goals": [
-        "いまはリンゴが上から落ちてこない。原因を見つけて直す",
-        "リンゴが下まで落ちたら、上に戻るようにする"
+        "リンゴが下まで落ちてから、上にもどるようにする"
        ],
        "hints": [
-        "まず「動かしてみる」で、どうなっているか見てみよう。",
-        "y_position() を調べている if の、比べる記号に注目。",
-        "「-170 より小さいなら」にしたい。記号の向きは？"
+        "いまは、リンゴがずっと上にいる。",
+        "下に行きすぎたかを調べる if を見よう。",
+        "> を < にする。"
        ],
        "checks": [
         {
          "type": "code",
-         "label": "「-170より小さいなら」になっている",
-         "sprite": "リンゴ",
+         "label": "下に行きすぎたら、で分けている",
+         "fail": "if y_position() < -170: にしよう。",
          "line": "if y_position() < -170:",
          "indent": 2,
-         "fail": "比べる記号の向きを見直そう。"
+         "sprite": "リンゴ"
         },
         {
          "type": "run",
-         "label": "下まで落ちたリンゴが上に戻る",
-         "ms": 5500,
+         "label": "下まで落ちて上にもどる",
+         "ms": 5000,
          "expect": [
           {
            "kind": "returnAfter",
@@ -733,352 +1136,282 @@
            "above": 120
           }
          ],
-         "fail": "リンゴが下まで落ちても、上に戻らなかったよ。",
-         "setup": [
-          {
-           "sprite": "ネコ",
-           "visible": false,
-           "at": 60
-          }
-         ]
+         "fail": "リンゴが下まで落ちていないよ。"
         }
        ]
       }
      ]
     },
     {
-     "id": "l4",
-     "title": "第4回　くり返しを書きかえる",
+     "id": "k7",
+     "title": "第7回　字下げのまちがいを直す",
      "slides": [
       {
-       "title": "「ずっと」は while True",
-       "text": "「ずっと」ブロックは while True: になる。中に入れる命令は、4文字右に下げて書く。",
-       "code": "while True:\n    change_y(-5)"
+       "title": "字下げで「中」か「外」かが決まる",
+       "text": "同じ命令でも、字下げの深さで、どのくり返しや if の中に入るかが変わる。Scratchで、ブロックを入れる場所をまちがえるのと同じ。",
+       "code": "@when_flag_clicked\ndef script1():\n    for i in range(3):\n        move(50)\n        wait(0.5)\n    say_for(\"おわり\", 1)"
       },
       {
-       "title": "「〇回くり返す」は for",
-       "text": "「3回くり返す」ブロックは for i in range(3): と書く。表示を切りかえると range(0, 3) になるが、同じ意味（0から数えて3回）。",
-       "code": "for i in range(3):\n    change_y(40)\n    wait(0.2)\n    change_y(-40)\n    wait(0.2)"
-      },
-      {
-       "title": "くり返しの中か、外か",
-       "text": "くり返したい命令は、くり返しの中（1段深く）に書く。外に書くと1回しか動かない。キーを押したかを調べる if は、「ずっと」の中に入れないと、最初の1回しか調べない。",
-       "code": "while True:\n    if key_pressed(\"右向き矢印\"):\n        change_x(10)"
+       "title": "外にある命令は、1回だけ",
+       "text": "くり返しの外（字下げをもどした行）は、くり返しが終わってから1回だけ動く。\nwhile True: の外の行は、くり返しが終わらないので動かない。",
+       "code": "@when_flag_clicked\ndef script1():\n    while True:\n        change_y(-5)\n        wait(0.1)"
       }
      ],
      "exercises": [
       {
-       "id": "l4e1",
-       "title": "ネコを3回ジャンプさせよう",
+       "id": "k7e1",
+       "title": "落ちるようにしよう",
        "project": "catch.sb3",
-       "sprite": "ネコ",
+       "sprite": "リンゴ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+        "リンゴ": "@when_flag_clicked\ndef script1():\n    go_to(0, 170)\n    while True:\n        wait(0.05)\n    change_y(-5)"
        },
        "goals": [
-        "スペースキーが押されたら、ネコが3回ジャンプする",
-        "1回のジャンプは「y座標を40ずつ変える → 0.2秒待つ → y座標を-40ずつ変える → 0.2秒待つ」"
+        "リンゴがずっと下に落ちるようにする"
        ],
        "hints": [
-        "新しいスクリプトは @when_key_pressed(\"スペース\") から。",
-        "3回くり返すのは for i in range(3):",
-        "for の中の4行は、すべて同じ深さ（2段目）にそろえる。待つは wait(秒数)。"
+        "change_y(-5) は、くり返しの中にある？",
+        "while True: の外の行は動かない。",
+        "change_y(-5) を1段下げる。"
        ],
        "checks": [
         {
          "type": "code",
-         "label": "スペースキーのイベントがある",
-         "sprite": "ネコ",
-         "line": "@when_key_pressed(\"スペース\")",
-         "indent": 0,
-         "fail": "スペースキーのイベントの行を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "3回くり返している",
-         "sprite": "ネコ",
-         "line": "for i in range(0, 3):",
-         "indent": 1,
-         "fail": "for の書き方（range の数）と、字下げの深さを見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "40上がる命令がくり返しの中にある",
-         "sprite": "ネコ",
-         "line": "change_y(40)",
+         "label": "落ちる命令がくり返しの中にある",
+         "fail": "change_y(-5) を1段下げて、くり返しの中に入れよう。",
+         "line": "change_y(-5)",
          "indent": 2,
-         "fail": "change_y(40) を for の中（2段目）に書こう。"
+         "sprite": "リンゴ"
         },
         {
          "type": "run",
-         "label": "スペースキーでジャンプして、元の高さにもどる",
-         "ms": 2600,
+         "label": "リンゴが落ちていく",
+         "ms": 1500,
          "expect": [
           {
-           "kind": "reach",
-           "sprite": "ネコ",
+           "kind": "decrease",
+           "sprite": "リンゴ",
            "prop": "y",
-           "above": -115
-          },
-          {
-           "kind": "final",
-           "sprite": "ネコ",
-           "prop": "y",
-           "op": "<=",
-           "value": -130
+           "min": 40
           }
          ],
-         "fail": "スペースキーを押しても、ネコがジャンプしなかったか、元の高さにもどらなかったよ。",
+         "fail": "リンゴが落ちていないよ。"
+        }
+       ]
+      },
+      {
+       "id": "k7e2",
+       "title": "左キーを直そう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n            if key_pressed(\"左向き矢印\"):\n                change_x(-10)"
+       },
+       "goals": [
+        "左向き矢印キーだけを押したときも、左に動くようにする"
+       ],
+       "hints": [
+        "左の if が、右の if の中に入ってしまっている。",
+        "左の if を、右の if と同じ深さにする。",
+        "左の if を1段、change_x(-10) も1段もどす。"
+       ],
+       "checks": [
+        {
+         "type": "code",
+         "label": "左の if が右の if の外にある",
+         "fail": "左の if を、右の if と同じ深さ（2段）にしよう。",
+         "line": "if key_pressed(\"左向き矢印\"):",
+         "indent": 2,
+         "sprite": "ネコ"
+        },
+        {
+         "type": "run",
+         "label": "左キーで左に動く",
+         "ms": 1600,
+         "expect": [
+          {
+           "kind": "decrease",
+           "sprite": "ネコ",
+           "prop": "x",
+           "min": 30
+          }
+         ],
+         "fail": "左向き矢印キーだけを押しても、左に動かないよ。",
          "keys": [
           {
-           "key": "space",
+           "key": "左向き矢印",
            "at": 300,
-           "hold": 150
+           "hold": 600
           }
          ]
         }
        ]
       },
       {
-       "id": "l4e2",
-       "title": "キーで動かないネコを直そう",
+       "id": "k7e3",
+       "title": "「おわり」は最後に1回",
        "project": "catch.sb3",
        "sprite": "ネコ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    if key_pressed(\"右向き矢印\"):\n        change_x(10)\n    if key_pressed(\"左向き矢印\"):\n        change_x(-10)"
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(-150, -140)\n    for i in range(3):\n        move(50)\n        say_for(\"おわり\", 1)"
        },
        "goals": [
-        "いまは矢印キーを押してもネコが動かない。原因を見つけて直す",
-        "矢印キーを押しているあいだ、ずっと左右に動くようにする"
+        "50歩ずつ3回動いたあと、最後に1回だけ「おわり」と言う"
        ],
        "hints": [
-        "キーを押したかを調べる if は、何回調べられているかな？",
-        "ずっと調べ続けるには while True: の中に入れる。",
-        "while True: を書いて、2つの if（とその中）を1段ずつ右に下げる。"
+        "いまは、動くたびに「おわり」と言っている。",
+        "say_for はくり返しの外に出す。",
+        "say_for(\"おわり\", 1) の字下げを1段もどす。"
        ],
        "checks": [
         {
          "type": "code",
-         "label": "「ずっと」がある",
-         "sprite": "ネコ",
-         "line": "while True:",
+         "label": "「おわり」がくり返しの外にある",
+         "fail": "say_for(\"おわり\", 1) を、for と同じ深さにしよう。",
+         "line": "say_for(\"おわり\", 1)",
          "indent": 1,
-         "fail": "while True: を、go_to の次の行（1段目）に書こう。"
-        },
-        {
-         "type": "code",
-         "label": "右向き矢印の if が「ずっと」の中にある",
-         "sprite": "ネコ",
-         "line": "if key_pressed(\"右向き矢印\"):",
-         "indent": 2,
-         "fail": "if を while True: の中（2段目）に入れよう。"
+         "sprite": "ネコ"
         },
         {
          "type": "run",
-         "label": "右向き矢印で右に動く",
-         "ms": 1500,
+         "label": "動いてから1回だけ言う",
+         "ms": 2500,
          "expect": [
           {
-           "kind": "increase",
+           "kind": "still",
            "sprite": "ネコ",
            "prop": "x",
-           "min": 40,
-           "from": 200
+           "from": 200,
+           "until": 2400,
+           "tol": 3
+          },
+          {
+           "kind": "said",
+           "sprite": "ネコ",
+           "text": "おわり"
           }
          ],
-         "fail": "右向き矢印を押しても、ネコが右に動かなかったよ。",
-         "keys": [
-          {
-           "key": "右向き矢印",
-           "at": 400,
-           "hold": 700
-          }
-         ]
+         "fail": "3回動き終わってから、1回だけ「おわり」と言うようにしよう。"
         }
        ]
       }
      ]
     },
     {
-     "id": "l5",
-     "title": "第5回　エラーと仲よくなる",
+     "id": "k8",
+     "title": "第8回　エラーを読んで直す",
      "slides": [
       {
-       "title": "エラーは、ヒントをくれる",
-       "text": "コードにまちがいがあると「判定する」や「動かしてみる」のときにエラーが出る。エラーには「何行目か」と「どうまちがっているか」が書いてある。まず行の番号を見て、その行を読もう。",
-       "code": "while True\n    change_y(-5)"
+       "title": "エラーは「ここがおかしい」のお知らせ",
+       "text": "コードに書きまちがいがあると、動かす前にエラーが出る。何行目がおかしいかと、理由が書いてある。\n赤くなった行と、その上の行を見てみよう。",
+       "code": "@when_flag_clicked\ndef script1():\n    say_for(\"こんにちは！\", 2)"
       },
       {
        "title": "よくあるまちがい",
-       "text": "・行の終わりの「:」を忘れる\n・全角の文字（（）や ５ など）を使う\n・字下げの深さがずれる\n・命令の名前のつづりをまちがえる\n・比べるときに「==」ではなく「=」を書く"
-      },
-      {
-       "title": "1つずつ直す",
-       "text": "エラーは、上の行から1つずつ見つかる。1つ直したら、もう一度「判定する」を押して、次のエラーを確かめよう。エラーが出なくなったら、動きが目標どおりかを確かめる。"
+       "text": "( ) や \" \" の閉じわすれ／ while や if の最後の : のわすれ／命令のつづりまちがい（move(10) を mvoe(10) と書くなど）／全角の記号や数字。\n正しい形と見くらべて直そう。",
+       "code": "@when_flag_clicked\ndef script1():\n    while True:\n        move(10)\n        say_for(\"やあ\", 1)"
       }
      ],
      "exercises": [
       {
-       "id": "l5e1",
+       "id": "k8e1",
        "title": "エラーを直そう（1）",
        "project": "catch.sb3",
-       "sprite": "リンゴ",
+       "sprite": "ネコ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    say_for(\"こんにちは！\", 2"
        },
        "goals": [
-        "エラーを直して、リンゴが落ちてくるようにする"
+        "エラーを直して、「こんにちは！」と2秒言うようにする"
        ],
        "hints": [
-        "「判定する」を押して、エラーの行番号を見よう。",
-        "その行の終わりに注目。",
-        "while の行の最後には「:」が必要。"
+        "エラーの行を見よう。",
+        "かっこは ( と ) で1組。",
+        "最後に ) を足す。"
        ],
        "checks": [
         {
-         "type": "code",
-         "label": "while の行が正しい",
-         "sprite": "リンゴ",
-         "line": "while True:",
-         "indent": 1,
-         "fail": "while の行の最後を見直そう。"
-        },
-        {
          "type": "run",
-         "label": "リンゴが下に落ちていく",
+         "label": "「こんにちは！」と言う",
          "ms": 1200,
-         "expect": [
-          {
-           "kind": "decrease",
-           "sprite": "リンゴ",
-           "prop": "y",
-           "min": 40
-          }
-         ],
-         "fail": "リンゴが下に動いていないよ。",
-         "setup": [
-          {
-           "sprite": "ネコ",
-           "visible": false,
-           "at": 60
-          }
-         ]
-        }
-       ],
-       "brokenStarter": true
-      },
-      {
-       "id": "l5e2",
-       "title": "エラーを直そう（2）",
-       "project": "catch.sb3",
-       "sprite": "リンゴ",
-       "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-５)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
-       },
-       "goals": [
-        "エラーを直して、リンゴが落ちてくるようにする"
-       ],
-       "hints": [
-        "エラーの行番号の行を、1文字ずつよく見よう。",
-        "数字が全角になっていないかな？",
-        "全角の「５」を、半角の「5」に書き直そう。"
-       ],
-       "checks": [
-        {
-         "type": "code",
-         "label": "change_y の数が半角",
-         "sprite": "リンゴ",
-         "line": "change_y(-5)",
-         "indent": 2,
-         "fail": "数字が半角かどうか見直そう。"
-        },
-        {
-         "type": "run",
-         "label": "リンゴが下に落ちていく",
-         "ms": 1200,
-         "expect": [
-          {
-           "kind": "decrease",
-           "sprite": "リンゴ",
-           "prop": "y",
-           "min": 40
-          }
-         ],
-         "fail": "リンゴが下に動いていないよ。",
-         "setup": [
-          {
-           "sprite": "ネコ",
-           "visible": false,
-           "at": 60
-          }
-         ]
-        }
-       ],
-       "brokenStarter": true
-      },
-      {
-       "id": "l5e3",
-       "title": "エラーを直そう（3）",
-       "project": "catch.sb3",
-       "sprite": "リンゴ",
-       "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)\n        if 得点 = 5:\n            prnt(\"クリア！\")",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
-       },
-       "goals": [
-        "エラーが2つある。1つずつ直す",
-        "得点が5になったら、リンゴが「クリア！」と言うようにする"
-       ],
-       "hints": [
-        "1つ目のエラーは、比べる記号。",
-        "2つ目のエラーは、命令の名前のつづり。",
-        "「同じなら」は ==、「言う」は print。"
-       ],
-       "checks": [
-        {
-         "type": "code",
-         "label": "得点が5かを調べている",
-         "sprite": "リンゴ",
-         "line": "if 得点 == 5:",
-         "indent": 2,
-         "fail": "比べる記号を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "「クリア！」と言う",
-         "sprite": "リンゴ",
-         "line": "print(\"クリア！\")",
-         "indent": 3,
-         "fail": "命令の名前のつづりを見直そう。"
-        },
-        {
-         "type": "run",
-         "label": "得点が5になると「クリア！」と言う",
-         "ms": 1500,
          "expect": [
           {
            "kind": "said",
-           "sprite": "リンゴ",
-           "text": "クリア"
+           "sprite": "ネコ",
+           "text": "こんにちは"
           }
          ],
-         "fail": "得点を5にしても、リンゴが「クリア！」と言わなかったよ。",
-         "setup": [
+         "fail": "「こんにちは！」と言わなかったよ。"
+        }
+       ],
+       "brokenStarter": true
+      },
+      {
+       "id": "k8e2",
+       "title": "エラーを直そう（2）",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    point_in_direction(90)\n    while True\n        turn_right(15)\n        wait(0.1)"
+       },
+       "goals": [
+        "エラーを直して、ずっと回るようにする"
+       ],
+       "hints": [
+        "while の行を見よう。",
+        "while や if の行の最後には、ある記号が必要。",
+        "while True: にする。"
+       ],
+       "checks": [
+        {
+         "type": "run",
+         "label": "ずっと回る",
+         "ms": 2500,
+         "expect": [
           {
+           "kind": "varies",
            "sprite": "ネコ",
-           "visible": false,
-           "at": 60
-          },
-          {
-           "variable": "得点",
-           "value": 5,
-           "at": 400
+           "prop": "dir",
+           "min": 30,
+           "from": 1000
           }
-         ]
+         ],
+         "fail": "ずっと回っていないよ。"
+        }
+       ],
+       "brokenStarter": true
+      },
+      {
+       "id": "k8e3",
+       "title": "エラーを直そう（3）",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    mvoe(100)"
+       },
+       "goals": [
+        "エラーを直して、ネコが100歩動くようにする"
+       ],
+       "hints": [
+        "エラーの文を読もう。",
+        "命令の名前のつづりを見よう。",
+        "mvoe を move にする。"
+       ],
+       "checks": [
+        {
+         "type": "run",
+         "label": "100歩動く",
+         "ms": 1200,
+         "expect": [
+          {
+           "kind": "final",
+           "sprite": "ネコ",
+           "prop": "x",
+           "op": ">=",
+           "value": 95
+          }
+         ],
+         "fail": "ネコが100歩動いていないよ。"
         }
        ],
        "brokenStarter": true
@@ -1086,62 +1419,37 @@
      ]
     },
     {
-     "id": "r2",
+     "id": "m2",
      "title": "ステップ2　まとめテスト",
      "slides": [
       {
        "title": "ステップ2のまとめ",
-       "text": "・「=」は入れる、「==」は比べる。「<」「>」の向きに注意。\n・「ずっと」は while True:、「〇回くり返す」は for i in range(〇):\n・くり返したい命令は、くり返しの中（1段深く）に書く。\n・エラーは行番号と理由を読み、1つずつ直す。\nこのテストは、ヒントを見ないで挑戦しよう。"
+       "text": "記号（= と ==、< と >）、字下げ、エラーの読み方。まちがいを見つけるコツは、ブロックと見比べて「どこに入っているか」を確かめること。",
+       "code": "@when_flag_clicked\ndef script1():\n    if y_position() < -170:\n        ミス = ミス + 1\n        go_to(random(-200, 200), 170)"
       }
      ],
      "exercises": [
       {
-       "id": "r2e1",
-       "title": "バグを全部直そう",
+       "id": "m2e1",
+       "title": "バグを3つ直そう",
        "project": "catch.sb3",
        "sprite": "リンゴ",
        "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-５)\n        if touching(\"ネコ\")\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)\n        if y_position() > -170:\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10)\n        if key_pressed(\"左向き矢印\"):\n            change_x(-10)"
+        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    ミス = 0\n    go_to(0, 170)\n    while True:\n        change_y(5)\n        if y_position() > -170:\n            go_to(random(-200, 200), 170)\n        ミス = ミス + 1\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)"
        },
        "goals": [
-        "このコードにはまちがいが3つある。すべて直す",
-        "リンゴが落ちてきて、下まで落ちたら上に戻るようにする"
+        "リンゴが下に落ちて、下に着いたら上にもどる",
+        "下に着いたときだけ、ミスが1ふえる",
+        "バグ（まちがい）は3つある"
        ],
        "hints": [
-        "エラーは上から1つずつ見つかる。行番号を見よう。",
-        "全角の文字と、行の終わりの「:」に注意。",
-        "エラーがなくなっても動きがおかしいなら、比べる記号の向きを見よう。"
+        "落ちる向き、比べる向き、字下げを見よう。"
        ],
        "checks": [
         {
-         "type": "code",
-         "label": "落ちる量が半角で書けている",
-         "sprite": "リンゴ",
-         "line": "change_y(-5)",
-         "indent": 2,
-         "fail": "数字が半角かどうか見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "ネコに触れたかを調べる if が正しい",
-         "sprite": "リンゴ",
-         "line": "if touching(\"ネコ\"):",
-         "indent": 2,
-         "fail": "if の行の最後を見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "「-170より小さいなら」になっている",
-         "sprite": "リンゴ",
-         "line": "if y_position() < -170:",
-         "indent": 2,
-         "fail": "比べる記号の向きを見直そう。"
-        },
-        {
          "type": "run",
-         "label": "下まで落ちたリンゴが上に戻る",
-         "ms": 5500,
+         "label": "下まで落ちて上にもどる",
+         "ms": 5000,
          "expect": [
           {
            "kind": "returnAfter",
@@ -1151,120 +1459,90 @@
            "above": 120
           }
          ],
-         "fail": "リンゴが下まで落ちても、上に戻らなかったよ。",
-         "setup": [
-          {
-           "sprite": "ネコ",
-           "visible": false,
-           "at": 60
-          }
-         ]
-        }
-       ],
-       "brokenStarter": true
-      },
-      {
-       "id": "r2e2",
-       "title": "ネコのスクリプトをまとめて書こう",
-       "project": "catch.sb3",
-       "sprite": "ネコ",
-       "starter": {
-        "リンゴ": "@when_flag_clicked\ndef script1():\n    得点 = 0\n    go_to(0, 170)\n    while True:\n        change_y(-5)\n        if touching(\"ネコ\"):\n            得点 = 得点 + 1\n            go_to(random(-200, 200), 170)",
-        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    if key_pressed(\"右向き矢印\"):\n        change_x(10)\n    if key_pressed(\"左向き矢印\"):\n        change_x(-10)"
-       },
-       "goals": [
-        "矢印キーを押しているあいだ、ネコが左右に動くように直す（速さは1回に15）",
-        "スペースキーが押されたら、ネコが2回ジャンプする（40上がる → 0.2秒待つ → 40下がる → 0.2秒待つ）"
-       ],
-       "hints": [
-        "キーを調べる if は「ずっと」の中に。",
-        "速さは change_x の数。左はマイナス。",
-        "2回くり返すのは for i in range(2):"
-       ],
-       "checks": [
-        {
-         "type": "code",
-         "label": "「ずっと」がある",
-         "sprite": "ネコ",
-         "line": "while True:",
-         "indent": 1,
-         "fail": "while True: を1段目に書こう。"
-        },
-        {
-         "type": "code",
-         "label": "右に1回15動く（ずっとの中）",
-         "sprite": "ネコ",
-         "line": "change_x(15)",
-         "indent": 3,
-         "fail": "右向き矢印のときの change_x と、字下げの深さを見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "左に1回15動く（ずっとの中）",
-         "sprite": "ネコ",
-         "line": "change_x(-15)",
-         "indent": 3,
-         "fail": "左向き矢印のときの change_x と、字下げの深さを見直そう。"
-        },
-        {
-         "type": "code",
-         "label": "2回くり返している",
-         "sprite": "ネコ",
-         "line": "for i in range(0, 2):",
-         "indent": 1,
-         "fail": "for の書き方と字下げを見直そう。"
+         "fail": "リンゴが下まで落ちて、上にもどっていないよ。"
         },
         {
          "type": "run",
-         "label": "右向き矢印で右に動く",
-         "ms": 1500,
+         "label": "ミスは下に着いたときだけふえる",
+         "ms": 4500,
+         "expect": [
+          {
+           "kind": "var",
+           "name": "ミス",
+           "op": ">=",
+           "value": 1
+          },
+          {
+           "kind": "var",
+           "name": "ミス",
+           "op": "<=",
+           "value": 8
+          }
+         ],
+         "fail": "ミスのふえ方がおかしいよ。ミス = ミス + 1 の字下げを見よう。"
+        }
+       ]
+      },
+      {
+       "id": "m2e2",
+       "title": "エラーと字下げを直そう",
+       "project": "catch.sb3",
+       "sprite": "ネコ",
+       "starter": {
+        "ネコ": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n    while True:\n        if key_pressed(\"右向き矢印\"):\n            change_x(10\n        if key_pressed(\"左向き矢印\")\n        change_x(-10)"
+       },
+       "goals": [
+        "エラーを直して、右向き・左向き矢印キーで左右に動くようにする",
+        "まちがいは3つある"
+       ],
+       "hints": [
+        "エラーの文を読んで、1つずつ直そう。"
+       ],
+       "checks": [
+        {
+         "type": "run",
+         "label": "左キーで左に動く",
+         "ms": 1600,
+         "expect": [
+          {
+           "kind": "decrease",
+           "sprite": "ネコ",
+           "prop": "x",
+           "min": 30
+          }
+         ],
+         "fail": "左向き矢印キーで左に動かないよ。",
+         "keys": [
+          {
+           "key": "左向き矢印",
+           "at": 300,
+           "hold": 600
+          }
+         ]
+        },
+        {
+         "type": "run",
+         "label": "右キーで右に動く",
+         "ms": 1600,
          "expect": [
           {
            "kind": "increase",
            "sprite": "ネコ",
            "prop": "x",
-           "min": 40,
-           "from": 200
+           "min": 30
           }
          ],
-         "fail": "右向き矢印を押しても、ネコが右に動かなかったよ。",
+         "fail": "右向き矢印キーで右に動かないよ。",
          "keys": [
           {
            "key": "右向き矢印",
-           "at": 400,
-           "hold": 700
-          }
-         ]
-        },
-        {
-         "type": "run",
-         "label": "スペースキーでジャンプして、元の高さにもどる",
-         "ms": 2200,
-         "expect": [
-          {
-           "kind": "reach",
-           "sprite": "ネコ",
-           "prop": "y",
-           "above": -115
-          },
-          {
-           "kind": "final",
-           "sprite": "ネコ",
-           "prop": "y",
-           "op": "<=",
-           "value": -130
-          }
-         ],
-         "fail": "スペースキーを押しても、ネコがジャンプしなかったか、元の高さにもどらなかったよ。",
-         "keys": [
-          {
-           "key": "space",
            "at": 300,
-           "hold": 150
+           "hold": 600
           }
          ]
         }
-       ]
+       ],
+       "brokenStarter": true
       }
      ]
     }
@@ -1274,8 +1552,8 @@
    "title": "ステップ3　書く",
    "lessons": [
     {
-     "id": "l6",
-     "title": "第6回　input() で質問する",
+     "id": "k9",
+     "title": "第9回　input() で質問する",
      "slides": [
       {
        "title": "質問して、答えを使う",
@@ -1284,13 +1562,18 @@
       },
       {
        "title": "文字をつなぐ ＋",
-       "text": "文字と文字の ＋ は「つなぐ」（Scratchの「〇と〇」ブロック）。数と数の ＋ は足し算になる。\n\"こんにちは、\" + 名前 + \"！\" は、名前が「たろう」なら「こんにちは、たろう！」になる。",
-       "code": "\"こんにちは、\" + \"たろう\" + \"！\"   # → こんにちは、たろう！\n3 + 4                         # → 7"
+       "text": "文字と文字の ＋ は「つなぐ」（Scratchの「〇と〇」ブロック）。数と数の ＋ は足し算になる。\n\"こんにちは、\" + 名前 + \"！\" は、名前が「たろう」なら「こんにちは、たろう！」になる。\n上の行は「こんにちは、たろう！」、下の行は「7」と言う。",
+       "code": "@when_flag_clicked\ndef script1():\n    say_for(\"こんにちは、\" + \"たろう\" + \"！\", 2)\n    say_for(3 + 4, 2)"
       },
       {
        "title": "答えで分ける if と else",
        "text": "else: は「でなければ」。if と同じ深さに書き、その中はもう1段下げる。\n比べるときは = ではなく == を使う。",
        "code": "答え = input(\"3 × 4 は？\")\nif 答え == \"12\":\n    say_for(\"正解！\", 2)\nelse:\n    say_for(\"ざんねん\", 2)"
+      },
+      {
+       "title": "ずっと言う print",
+       "text": "print(\"こんにちは\") は「こんにちは と言う」（秒数なし。ふきだしが出たままになる）。\n本物のPythonでは、print は画面に文字を出す命令。",
+       "code": "@when_flag_clicked\ndef script1():\n    名前 = input(\"名前は？\")\n    print(\"こんにちは、\" + 名前)"
       },
       {
        "title": "数として使うときは int()",
@@ -1300,7 +1583,7 @@
      ],
      "exercises": [
       {
-       "id": "l6e1",
+       "id": "k9e1",
        "title": "名前を聞いてあいさつしよう",
        "project": "catch.sb3",
        "sprite": "ネコ",
@@ -1348,7 +1631,7 @@
        ]
       },
       {
-       "id": "l6e2",
+       "id": "k9e2",
        "title": "かけ算クイズを作ろう",
        "project": "catch.sb3",
        "sprite": "ネコ",
@@ -1428,7 +1711,7 @@
        ]
       },
       {
-       "id": "l6e3",
+       "id": "k9e3",
        "title": "足し算マシンを作ろう",
        "project": "catch.sb3",
        "sprite": "ネコ",
@@ -1482,8 +1765,8 @@
      ]
     },
     {
-     "id": "l7",
-     "title": "第7回　while と random で動きを作る",
+     "id": "k10",
+     "title": "第10回　条件つきのくり返しと乱数",
      "slides": [
       {
        "title": "条件つきのくり返し while",
@@ -1497,13 +1780,18 @@
       },
       {
        "title": "random で毎回ちがう結果",
-       "text": "random(1, 6) は、1から6までのどれかの数になる（サイコロ）。\n変数に入れておくと、同じ数を何回も使える。",
+       "text": "random(1, 6) は、1から6までのどれかの数になる（サイコロ）。変数に入れておくと、同じ数を何回も使える。\nstr(目) は、数を文字にする（文字とつなぐときに使う）。",
        "code": "目 = random(1, 6)\nsay_for(str(目) + \"が出た！\", 1)"
+      },
+      {
+       "title": "キーが押されたとき",
+       "text": "@when_key_pressed(\"スペース\") と def script2(): の2行で、「スペースキーが押されたとき」のまとまりになる。\n新しいまとまりは、いまのまとまりのあとに1行あけて、字下げしないで書く。",
+       "code": "@when_key_pressed(\"スペース\")\ndef script2():\n    say_for(\"ジャンプ！\", 1)"
       }
      ],
      "exercises": [
       {
-       "id": "l7e1",
+       "id": "k10e1",
        "title": "下に着くまで落とそう",
        "project": "catch.sb3",
        "sprite": "リンゴ",
@@ -1552,7 +1840,7 @@
        ]
       },
       {
-       "id": "l7e2",
+       "id": "k10e2",
        "title": "だんだん速くしよう",
        "project": "catch.sb3",
        "sprite": "リンゴ",
@@ -1610,7 +1898,7 @@
        ]
       },
       {
-       "id": "l7e3",
+       "id": "k10e3",
        "title": "サイコロをふろう",
        "project": "catch.sb3",
        "sprite": "ネコ",
@@ -1681,8 +1969,8 @@
      ]
     },
     {
-     "id": "l8",
-     "title": "第8回　まとまりとメッセージ",
+     "id": "k11",
+     "title": "第11回　まとまりとメッセージ",
      "slides": [
       {
        "title": "def は命令のまとまり",
@@ -1697,12 +1985,12 @@
       {
        "title": "まとまりを書く場所",
        "text": "新しいまとまりは、いまあるまとまりのあとに、1行あけて書く。@ の行と def の行は字下げしない（0段目）。\nscript1、script2 … の番号は、同じスプライトの中で重ならなければよい。",
-       "code": "@when_flag_clicked\ndef script1():\n    ...\n\n@when_broadcast_received(\"スタート\")\ndef script2():\n    ..."
+       "code": "@when_flag_clicked\ndef script1():\n    go_to(0, -140)\n\n@when_broadcast_received(\"スタート\")\ndef script2():\n    say_for(\"スタート！\", 1)"
       }
      ],
      "exercises": [
       {
-       "id": "l8e1",
+       "id": "k11e1",
        "title": "ミスを受け取ろう",
        "project": "catch.sb3",
        "sprite": "ネコ",
@@ -1744,7 +2032,7 @@
        ]
       },
       {
-       "id": "l8e2",
+       "id": "k11e2",
        "title": "ミスを送ろう",
        "project": "catch.sb3",
        "sprite": "リンゴ",
@@ -1786,7 +2074,7 @@
        ]
       },
       {
-       "id": "l8e3",
+       "id": "k11e3",
        "title": "スタートの合図を作ろう",
        "project": "catch.sb3",
        "sprite": "リンゴ",
@@ -1848,8 +2136,8 @@
      ]
     },
     {
-     "id": "l9",
-     "title": "第9回　リストを使う",
+     "id": "k12",
+     "title": "第12回　リストを使う",
      "slides": [
       {
        "title": "リストは、データをならべて入れる箱",
@@ -1863,13 +2151,13 @@
       },
       {
        "title": "append で追加、len で長さ",
-       "text": "記録.append(x) は、リストのいちばん後ろに x を追加する（Scratchの「〇を追加する」）。\nlen(記録) は、リストに入っている数（長さ）。",
-       "code": "記録 = []\n記録.append(120)\n記録.append(-40)\nsay_for(len(記録), 2)   # 2"
+       "text": "記録.append(x) は、リストのいちばん後ろに x を追加する（Scratchの「〇を追加する」）。\nlen(記録) は、リストに入っている数（長さ）。\nx_position() は「いまのx座標」（y_position() のx版）。",
+       "code": "記録 = []\n記録.append(120)\n記録.append(-40)\nsay_for(len(記録), 2)   # 2\n記録.append(x_position())"
       }
      ],
      "exercises": [
       {
-       "id": "l9e1",
+       "id": "k12e1",
        "title": "ほめことばリストを作ろう",
        "project": "catch.sb3",
        "sprite": "ネコ",
@@ -1932,7 +2220,7 @@
        ]
       },
       {
-       "id": "l9e2",
+       "id": "k12e2",
        "title": "落ちた場所を記録しよう",
        "project": "catch.sb3",
        "sprite": "リンゴ",
@@ -1975,23 +2263,30 @@
      ]
     },
     {
-     "id": "l10",
-     "title": "第10回　Scratchの外のPythonへ",
+     "id": "k13",
+     "title": "第13回　Scratchの外のPythonへ",
      "slides": [
       {
        "title": "本物のPythonでも、同じ考え方",
        "text": "ここまでの 変数・if・while・for・リスト・input() は、本物のPythonでもそのまま使える。\nちがうのは、スプライトやステージがないこと。言葉は print() で画面に文字として出す。",
-       "code": "名前 = input(\"名前は？\")\nprint(\"こんにちは、\" + 名前 + \"！\")"
+       "code": "@when_flag_clicked\ndef script1():\n    名前 = input(\"名前は？\")\n    print(\"こんにちは、\" + 名前 + \"！\")"
       },
       {
        "title": "このツールと本物のPythonのちがい",
        "text": "say_for(\"こんにちは\", 2) → print(\"こんにちは\")\nrandom(1, 6) → random.randint(1, 6)（最初に import random と書く）\nwait(1) → time.sleep(1)（最初に import time と書く）\ninput() と int()・str()・len() は同じ。",
-       "code": "import random\n目 = random.randint(1, 6)\nprint(str(目) + \"が出た！\")"
+       "code": "import random\n目 = random.randint(1, 6)\nprint(str(目) + \"が出た！\")",
+       "plain": true
       },
       {
        "title": "数あてゲーム（本物のPython）",
        "text": "while と if と input() を組み合わせると、ゲームが作れる。演習では、これをScratchの中で作ってみよう。",
-       "code": "import random\n正解 = random.randint(1, 10)\n予想 = int(input(\"1から10の数は？\"))\nwhile 予想 != 正解:\n    if 予想 < 正解:\n        print(\"もっと大きい\")\n    else:\n        print(\"もっと小さい\")\n    予想 = int(input(\"1から10の数は？\"))\nprint(\"あたり！\")"
+       "code": "import random\n正解 = random.randint(1, 10)\n予想 = int(input(\"1から10の数は？\"))\nwhile 予想 != 正解:\n    if 予想 < 正解:\n        print(\"もっと大きい\")\n    else:\n        print(\"もっと小さい\")\n    予想 = int(input(\"1から10の数は？\"))\nprint(\"あたり！\")",
+       "plain": true
+      },
+      {
+       "title": "くり返しの回数を使う i",
+       "text": "for i in range(1, 11): は、i が 1, 2, 3, … 10 と変わりながら10回くり返す（11 は入らない）。\n!= は「ちがう」。while 予想 != 正解: は「予想が正解とちがうあいだ」。",
+       "code": "@when_flag_clicked\ndef script1():\n    合計 = 0\n    for i in range(1, 11):\n        合計 = 合計 + i\n    say_for(合計, 2)\n    予想 = 3\n    while 予想 != 7:\n        予想 = 予想 + 1"
       },
       {
        "title": "これからPythonを書くには",
@@ -2001,7 +2296,7 @@
      ],
      "exercises": [
       {
-       "id": "l10e1",
+       "id": "k13e1",
        "title": "数あてゲームを作ろう",
        "project": "catch.sb3",
        "sprite": "ネコ",
@@ -2068,7 +2363,7 @@
        ]
       },
       {
-       "id": "l10e2",
+       "id": "k13e2",
        "title": "1から10まで足そう",
        "project": "catch.sb3",
        "sprite": "ネコ",
@@ -2117,18 +2412,18 @@
      ]
     },
     {
-     "id": "r3",
+     "id": "m3",
      "title": "ステップ3　まとめテスト",
      "slides": [
       {
        "title": "ステップ3のまとめ",
        "text": "input() で質問する、while に条件をつける、random、メッセージ、リスト、for。\nまとめテストでは、ヒントが少なめ。目標をよく読んで、自分で組み立ててみよう。",
-       "code": ""
+       "code": "@when_flag_clicked\ndef script1():\n    ミス = 0\n    while ミス < 3:\n        change_y(-6)"
       }
      ],
      "exercises": [
       {
-       "id": "r3e1",
+       "id": "m3e1",
        "title": "ミス3回でゲームオーバー",
        "project": "catch.sb3",
        "sprite": "リンゴ",
@@ -2183,7 +2478,7 @@
        ]
       },
       {
-       "id": "r3e2",
+       "id": "m3e2",
        "title": "3問クイズを作ろう",
        "project": "catch.sb3",
        "sprite": "ネコ",

@@ -16,7 +16,7 @@ w.fetch = async (url, opt) => {
   if (url.startsWith('/learn/course.json')) return res(course);
   if (b.action === 'login') return res({ ok: true, token: 't'.repeat(64), user: { id: 'sensei', role: 'teacher', name: '先生' } });
   if (b.action === 'list') return res({ ok: true, students: [{ id: 'k01', name: 'たろう', init: 'abcd2345', changed: false }, { id: 'sim01', name: 'シミュレーション用', init: null, changed: true, sim: true }] });
-  if (b.action === 'progressAll') return res({ ok: true, students: [{ id: 'k01', name: 'たろう', progress: { cleared: { l1e1: 1, l1e2: 2, l1e3: 3 }, tries: { l1e1: 2, l2e1: 1 }, last: Date.now() } }] });
+  if (b.action === 'progressAll') return res({ ok: true, students: [{ id: 'k01', name: 'たろう', progress: { cleared: { k1e1: 1, k1e2: 2, k1e3: 3 }, tries: { k1e1: 2, k2e1: 1 }, last: Date.now() } }] });
   if (b.action === 'create') return res({ ok: true, students: b.students.map((s) => ({ id: s.id, name: s.name, init: 'zzzz2345', changed: false })), errors: [] });
   return res({ ok: true });
 };

@@ -179,7 +179,21 @@
   const host = document.createElement('div');
   host.id = 'blockai-learn';
   const root = host.attachShadow({ mode: 'open' });
-  root.innerHTML = `<style>${CSS}</style>
+  root.innerHTML = `<style>${CSS}${window.BlockView ? window.BlockView.CSS : ''}
+  .bvslide { flex: 1 1 100%; min-width: 0; }
+  .bvslide .bv-cd { font-size: 15px; }
+  .bvpane { position: absolute; inset: 0; z-index: 3; background: #fff; overflow: auto; padding: 12px 14px; }
+  .bvpane .bvtip { font-size: 13px; color: #555B63; margin: 0 0 8px; }
+  .editor { position: relative; }
+  .refv { flex: 1; overflow: auto; padding: 20px; }
+  .refv > * { max-width: 980px; margin-left: auto; margin-right: auto; }
+  .refv .grp { background: #fff; border: 1px solid #DDE1E8; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+  .refv .grp h2 { margin: 0 0 10px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+  .refv .grp h2 i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+  .refv .item { padding: 8px 0; border-top: 1px solid #EEF0F3; }
+  .refv .item:first-of-type { border-top: none; }
+  .refv .note { font-size: 13px; color: #555B63; margin: 2px 0 0 36px; }
+  </style>
   <div class="root hidden">
     <header>
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -189,6 +203,7 @@
       <div style="display:flex;gap:8px">
         <span class="who" style="align-self:center;font-size:13px;opacity:.9"></span>
         <button class="hb ghost logout hidden" type="button">ログアウト</button>
+        <button class="hb ghost go-ref" type="button">対応表</button>
         <button class="hb ghost go-home" type="button">一覧</button>
         <button class="hb quit" type="button">学習をやめる</button>
       </div>
@@ -196,6 +211,7 @@
     <main>
       <section class="home"></section>
       <section class="slides hidden"><div class="slide card"></div></section>
+      <section class="refv hidden"></section>
       <section class="ex hidden">
         <div class="task card">
           <div class="crumb2"></div>
@@ -214,7 +230,8 @@
           <div class="edfoot">
             <button class="eb go" type="button">▶ 動かしてみる</button>
             <button class="eb stop" type="button">■ 止める</button>
-            <button class="eb peek" type="button">ブロックで確かめる</button>
+            <button class="eb bvtoggle" type="button">ブロックと見比べる</button>
+            <button class="eb peek" type="button">Scratchの画面で見る</button>
           </div>
         </div>
         <div class="side">
@@ -299,6 +316,9 @@
     el.home.classList.toggle('hidden', which !== 'home');
     el.slides.classList.toggle('hidden', which !== 'slides');
     el.ex.classList.toggle('hidden', which !== 'ex');
+    $('.refv').classList.toggle('hidden', which !== 'ref');
+    if (which !== 'ex') closeBv();
+    const gr = $('.go-ref'); if (gr) gr.textContent = '対応表';
     if (which !== 'ex') stopStage();
   }
 
@@ -376,13 +396,14 @@
     el.slide.innerHTML = '<div class="meta"><span></span><span class="cnt"></span></div><h1></h1><div class="scroll"><div class="body" style="display:flex;flex-direction:column;gap:12px"></div>' +
       '<div class="media" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">' +
       (s.image ? '<figure style="margin:0;flex:1 1 280px;max-width:460px;display:flex;flex-direction:column;gap:6px"><figcaption style="font-size:13px;color:#555B63"></figcaption><img style="border:1px solid #D5DAE1;border-radius:10px;background:#F9F9F9" alt=""></figure>' : '') +
-      (s.code ? '<pre class="code" style="flex:1 1 300px;min-width:0"></pre>' : '') + '</div></div>' +
+      (s.code ? (s.plain || !window.BlockView ? '<pre class="code" style="flex:1 1 300px;min-width:0"></pre>' : '<div class="bvslide"></div>') : '') + '</div></div>' +
       '<div class="nav"><div style="display:flex;align-items:center;gap:12px"><div class="dots"></div><span class="keyh">← → キーでもめくれます</span></div><div style="display:flex;gap:10px"><button class="bigbtn sub prev" type="button">戻る</button><button class="bigbtn nx" type="button"></button></div></div>';
     el.slide.querySelector('.meta span').textContent = ls.title;
     el.slide.querySelector('.cnt').textContent = 'スライド ' + (slideIdx + 1) + ' / ' + ls.slides.length;
     el.slide.querySelector('h1').textContent = s.title;
     String(s.text || '').split('\n').forEach((t) => { const p = document.createElement('p'); p.textContent = t; el.slide.querySelector('.body').appendChild(p); });
-    if (s.code) el.slide.querySelector('pre.code').innerHTML = hlHtml(s.code);
+    if (s.code && (s.plain || !window.BlockView)) el.slide.querySelector('pre.code').innerHTML = hlHtml(s.code);
+    else if (s.code) el.slide.querySelector('.bvslide').innerHTML = window.BlockView.table(s.code, { highlight: (t) => (t.trim() ? hlHtml(t) : ' ') }) + (s.plain === false ? '' : '');
     if (s.image) {
       const img = el.slide.querySelector('figure img');
       img.src = '/learn/img/' + encodeURIComponent(s.image);
@@ -613,6 +634,13 @@
 
   function checkCode(c, linesBySprite) {
     const lines = linesBySprite[c.sprite || ex.sprite] || [];
+    const norm = (t) => String(t).trim().replace(/\s+/g, ' ');
+    if (Array.isArray(c.order)) {
+      // 決まった順番で行があるか（あいだに別の行があってもよい）
+      let k = 0;
+      for (const l of lines) { if (k < c.order.length && l.text === norm(c.order[k])) k++; }
+      return k === c.order.length ? { ok: true } : { ok: false, msg: c.fail || '行の順番を見直そう。' };
+    }
     let same;
     if (c.pattern) {
       let re = null;
@@ -622,6 +650,7 @@
       const want = String(c.line).trim().replace(/\s+/g, ' ');
       same = lines.filter((l) => l.text === want);
     }
+    if (typeof c.count === 'number' && same.length !== c.count) return { ok: false, msg: c.fail || ('その行は ' + c.count + ' 回だけ書こう。') };
     if (same.some((l) => typeof c.indent !== 'number' || l.indent === c.indent)) return { ok: true };
     if (same.length) return { ok: false, msg: (c.fail ? c.fail + '　' : '') + '（行はあるけれど、字下げの深さがちがうよ）' };
     return { ok: false, msg: c.fail || '書き方を見直そう。' };
@@ -682,6 +711,13 @@
       const texts = x.texts || [x.text];
       const from = x.from || 0;
       return samples.some((s) => s.t >= from && s.sprites[x.sprite] && texts.some((t) => String(s.sprites[x.sprite].say || '').includes(t)));
+    }
+    if (x.kind === 'varies') {
+      // from（ミリ秒）からあとに、値が min 以上変わった
+      const v = valuesOf(samples, x.sprite, x.prop, x.from);
+      if (v.length < 2) return false;
+      if (x.prop === 'dir') { let tot = 0; for (let i = 1; i < v.length; i++) { let d = Math.abs(v[i] - v[i - 1]); if (d > 180) d = 360 - d; tot += d; } return tot >= x.min; }
+      return Math.max(...v) - Math.min(...v) >= x.min;
     }
     if (x.kind === 'still') {
       // until（ミリ秒）までは動かない（tol 以内）
@@ -862,6 +898,50 @@
     if (course && !el.home.classList.contains('hidden')) renderHome();
   });
   $('.hb.logout').addEventListener('click', () => { if (busy) return; stopStage(); window.BlockAuth.logout(); });
+  // ブロックと見比べる（コードの各行をブロックに置きかえて並べる）
+  let bvPane = null;
+  function closeBv() { if (bvPane) { bvPane.remove(); bvPane = null; } const b = $('.eb.bvtoggle'); if (b) b.textContent = 'ブロックと見比べる'; }
+  function openBv() {
+    if (!window.BlockView) return;
+    closeBv();
+    bvPane = document.createElement('div');
+    bvPane.className = 'bvpane';
+    bvPane.innerHTML = '<p class="bvtip">いまのコードを、行ごとにブロックで表したものです（見るだけ）。書きかえるときは「コードを書く画面にもどる」を押してね。</p>' + window.BlockView.table(el.ta.value, { highlight: (t) => (t.trim() ? hlHtml(t) : ' ') });
+    $('.editor').appendChild(bvPane);
+    $('.eb.bvtoggle').textContent = 'コードを書く画面にもどる';
+  }
+  $('.eb.bvtoggle').addEventListener('click', () => { if (bvPane) { closeBv(); el.ta.focus(); } else openBv(); });
+  let refFrom = 'home';
+  function openRef() {
+    if (busy || !window.BlockView) return;
+    const v = $('.refv');
+    if (!v.dataset.done) {
+      const B = window.BlockView;
+      let h = '<p style="margin:0 0 14px;color:#374151">左が Scratch のブロック、右が Python のコード。同じ行どうしが同じ命令です。ブロックの白いまる（入れる値）は、コードの ( ) の中に入ります。</p>';
+      B.REFERENCE.forEach((g) => {
+        h += '<section class="grp"><h2><i style="background:' + B.CAT[g.cat].c + '"></i>' + g.title + '</h2>';
+        g.items.forEach((it) => { h += '<div class="item">' + B.table(it.code, { noHead: true, highlight: (t) => (t.trim() ? hlHtml(t) : ' ') }) + '<div class="note">' + it.note.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])) + '</div></div>'; });
+        h += '</section>';
+      });
+      h += '<div style="text-align:center;margin:10px auto 20px"><button class="bigbtn back-ref" type="button">もどる</button></div>';
+      v.innerHTML = h;
+      v.dataset.done = '1';
+      v.querySelector('.back-ref').addEventListener('click', closeRef);
+    }
+    refFrom = !el.ex.classList.contains('hidden') ? 'ex' : !el.slides.classList.contains('hidden') ? 'slides' : 'home';
+    if (refFrom === 'ex') { el.ex.classList.add('hidden'); $('.refv').classList.remove('hidden'); }
+    else { el.home.classList.add('hidden'); el.slides.classList.add('hidden'); $('.refv').classList.remove('hidden'); }
+    $('.go-ref').textContent = '対応表を閉じる';
+    v.scrollTop = 0;
+  }
+  function closeRef() {
+    $('.refv').classList.add('hidden');
+    $('.go-ref').textContent = '対応表';
+    if (refFrom === 'ex') el.ex.classList.remove('hidden');
+    else if (refFrom === 'slides') el.slides.classList.remove('hidden');
+    else el.home.classList.remove('hidden');
+  }
+  $('.go-ref').addEventListener('click', () => { if ($('.refv').classList.contains('hidden')) openRef(); else closeRef(); });
   $('.go-home').addEventListener('click', () => { if (!busy) renderHome(); });
   $('.quit').addEventListener('click', () => el.confirm.classList.remove('hidden'));
   $('.confirm .no').addEventListener('click', () => el.confirm.classList.add('hidden'));
