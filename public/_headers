@@ -13,3 +13,6 @@
   Cache-Control: no-cache
   X-Frame-Options: DENY
   Referrer-Policy: no-referrer
+
+/table/*
+  Cache-Control: no-cache
