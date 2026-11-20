@@ -16,7 +16,7 @@ w.fetch = async (url, opt) => {
   if (url.startsWith('/learn/course.json')) return res(course);
   if (b.action === 'login') return res({ ok: true, token: 't'.repeat(64), user: { id: 'sensei', role: 'teacher', name: '先生' } });
   if (b.action === 'list') return res({ ok: true, students: [{ id: 'k01', name: 'たろう', init: 'abcd2345', changed: false }, { id: 'sim01', name: 'シミュレーション用', init: null, changed: true, sim: true }] });
-  if (b.action === 'progressAll') return res({ ok: true, students: [{ id: 'k01', name: 'たろう', progress: { cleared: { k1e1: 1, k1e2: 2, k1e3: 3 }, tries: { k1e1: 2, k2e1: 1 }, last: Date.now() } }] });
+  if (b.action === 'progressAll') return res({ ok: true, students: [{ id: 'k01', name: 'たろう', progress: { cleared: { a1q1: 1, a1q2: 1, a1e1: 2, a1e2: 3 }, tries: { a1e1: 2, a2e1: 1 }, last: Date.now() } }] });
   if (b.action === 'create') return res({ ok: true, students: b.students.map((s) => ({ id: s.id, name: s.name, init: 'zzzz2345', changed: false })), errors: [] });
   return res({ ok: true });
 };
@@ -33,7 +33,7 @@ w.eval(html.match(/<script>([\s\S]*)<\/script>/)[1]);
   const rows = [...w.document.querySelectorAll('.list tr')];
   ok(rows.length === 2 && rows[0].textContent.includes('abcd2345') && rows[1].textContent.includes('変更済み'), '生徒の一覧（初期パスワード・変更済み）');
   const pr = [...w.document.querySelectorAll('.prog tr')];
-  ok(pr.length === 3 && pr[2].textContent.includes('3/3') && pr[2].querySelector('td.all'), '進み具合の表（第1回 3/3 クリア）');
+  ok(pr.length === 3 && pr[2].textContent.includes('4/4') && pr[2].querySelector('td.all'), '進み具合の表（第1回 3/3 クリア）');
   const af = $('.addf');
   af.elements.uid.value = 'k02'; af.elements.nick.value = 'はなこ';
   af.dispatchEvent(new w.Event('submit', { cancelable: true }));

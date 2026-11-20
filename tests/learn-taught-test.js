@@ -42,6 +42,13 @@ course.steps.forEach((st) => st.lessons.forEach((l) => {
     if (s.code && !s.plain) textTokens(s.code).forEach((t) => taught.add(t));
   });
   l.exercises.forEach((e) => {
+    if (e.type === 'quiz') {
+      // えらぶ問題：問題に出すコードだけ調べる（まちがいの選択肢は、わざとまちがえてある）
+      const miss = [...tokens(e.code || '')].filter((t) => !taught.has(t));
+      ok(miss.length === 0, e.id + '（えらぶ問題）' + (miss.length ? ' 説明していないコード: ' + miss.join(' ') : ''));
+      checked++;
+      return;
+    }
     const used = new Set([...tokens(e.starter[e.sprite]), ...tokens(answers[e.id] || ''), ...[].concat(e.hints || []).flatMap((h) => [...textTokens(h)])]);
     const miss = [...used].filter((t) => !taught.has(t));
     ok(miss.length === 0, e.id + '（' + l.title + '）' + (miss.length ? ' 説明していないコード: ' + miss.join(' ') : ''));

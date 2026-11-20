@@ -185,6 +185,28 @@
   .bvpane { position: absolute; inset: 0; z-index: 3; background: #fff; overflow: auto; padding: 12px 14px; }
   .bvpane .bvtip { font-size: 13px; color: #555B63; margin: 0 0 8px; }
   .editor { position: relative; }
+  .uses { display: flex; flex-direction: column; gap: 0; flex: none; }
+  .uses .ul { font-size: 12px; font-weight: 700; color: #4B23A3; margin-bottom: 4px; }
+  .uses .ui { display: flex; flex-direction: column; gap: 3px; padding: 7px 0; border-top: 1px solid #EEF0F3; }
+  .uses .uc { font-family: "BIZ UDGothic", Consolas, Menlo, monospace; font-size: 12.5px; background: #1E1F23; color: #E6E6E6; border-radius: 5px; padding: 3px 8px; white-space: pre; align-self: flex-start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  .uses .un { font-size: 11.5px; color: #555B63; line-height: 1.5; }
+  .uses .bv-blk { font-size: 12px; padding: 3px 8px; }
+  .qz { flex: 1; overflow: auto; padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
+  .qcard { width: 100%; max-width: 820px; padding: 22px 28px; display: flex; flex-direction: column; gap: 12px; }
+  .qbadge { align-self: flex-start; font-size: 12px; font-weight: 700; color: #6B4A00; background: #FFF1CC; border-radius: 999px; padding: 2px 10px; }
+  .qtitle { margin: 0; font-size: 22px; }
+  .qtext { margin: 0; font-size: 16px; line-height: 1.7; white-space: pre-wrap; }
+  .qchoices { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .qch { text-align: left; border: 2px solid #C5CCD6; background: #fff; border-radius: 12px; padding: 12px 14px; min-height: 56px; cursor: pointer; display: flex; align-items: center; gap: 10px; font: inherit; font-size: 15px; color: #1F2328; }
+  .qch:hover { border-color: #7C4FD0; background: #FAF8FE; }
+  .qch .qk { flex: none; width: 26px; height: 26px; border-radius: 50%; background: #EEF0F3; color: #374151; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+  .qch.ok { border-color: #2E7D46; background: #E3F3E8; }
+  .qch.ng { border-color: #E5484D; background: #FDE7DD; }
+  .qch .qc { font-family: "BIZ UDGothic", Consolas, Menlo, monospace; background: #1E1F23; color: #E6E6E6; border-radius: 6px; padding: 4px 10px; white-space: pre; }
+  .qfb { border-radius: 10px; padding: 10px 14px; font-size: 15px; line-height: 1.7; white-space: pre-wrap; }
+  .qfb.ok { background: #E3F3E8; color: #1F5A32; }
+  .qfb.ng { background: #FFF1CC; color: #5C3B00; }
+  .qnav { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; }
   .refv { flex: 1; overflow: auto; padding: 20px; }
   .refv > * { max-width: 980px; margin-left: auto; margin-right: auto; }
   .refv .grp { background: #fff; border: 1px solid #DDE1E8; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
@@ -212,11 +234,22 @@
       <section class="home"></section>
       <section class="slides hidden"><div class="slide card"></div></section>
       <section class="refv hidden"></section>
+      <section class="qz hidden"><div class="qcard card">
+        <div class="crumb2 qcrumb"></div>
+        <div class="qbadge">えらぶ問題</div>
+        <h2 class="qtitle"></h2>
+        <p class="qtext"></p>
+        <div class="qcode"></div>
+        <div class="qchoices"></div>
+        <div class="qfb hidden"></div>
+        <div class="qnav"><button class="bigbtn sub qslides" type="button">スライドを見直す</button><button class="bigbtn qnext hidden" type="button">次へ</button></div>
+      </div></section>
       <section class="ex hidden">
         <div class="task card">
           <div class="crumb2"></div>
           <h2 class="ex-title"></h2>
           <div class="goals"></div>
+          <div class="uses"></div>
           <div class="hints"></div>
           <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
             <button class="tbtn hintb" type="button">ヒントを見る</button>
@@ -317,6 +350,7 @@
     el.slides.classList.toggle('hidden', which !== 'slides');
     el.ex.classList.toggle('hidden', which !== 'ex');
     $('.refv').classList.toggle('hidden', which !== 'ref');
+    $('.qz').classList.toggle('hidden', which !== 'qz');
     if (which !== 'ex') closeBv();
     const gr = $('.go-ref'); if (gr) gr.textContent = '対応表';
     if (which !== 'ex') stopStage();
@@ -364,7 +398,8 @@
           b.className = 'pill' + (cleared.has(e.id) ? ' done' : '') + (ls.exercises.length && /テスト/.test(ls.title) ? ' test' : '');
           const no = document.createElement('span');
           no.className = 'no';
-          no.textContent = (cleared.has(e.id) ? '✓ ' : '') + '演習' + (i + 1);
+          no.textContent = (cleared.has(e.id) ? '✓ ' : '') + (e.type === 'quiz' ? 'えらぶ' : '演習' + (i + 1));
+          if (e.type === 'quiz') no.style.background = cleared.has(e.id) ? '' : '#FFF1CC';
           const tt = document.createElement('span');
           tt.textContent = e.title;
           b.append(no, tt);
@@ -458,6 +493,7 @@
     lesson = ls;
     exIdx = i;
     ex = ls.exercises[i];
+    if (ex.type === 'quiz') { openQuiz(ls, i); return; }
     fails = 0;
     hintsShown = 0;
     show('ex');
@@ -466,6 +502,7 @@
     el.exTitle.textContent = ex.title;
     el.goals.innerHTML = '<b>目標</b>';
     ex.goals.forEach((g, k) => { const s = document.createElement('span'); s.textContent = (k + 1) + '. ' + g; el.goals.appendChild(s); });
+    renderUses();
     el.hints.innerHTML = '';
     el.hintBtn.disabled = !ex.hints.length;
     el.hintBtn.textContent = 'ヒントを見る（0 / ' + ex.hints.length + '）';
@@ -482,6 +519,77 @@
     if (assist) assist.refresh();
     await prepare();
   }
+
+  // 左の「この課題で使うコード」（ブロックとの対応つき）
+  function renderUses() {
+    const box = $('.uses');
+    box.innerHTML = '';
+    const list = ex.uses || [];
+    if (!list.length || !window.BlockView) return;
+    const h = document.createElement('div');
+    h.className = 'ul';
+    h.textContent = 'この課題で使うコード';
+    box.appendChild(h);
+    list.forEach((u) => {
+      const d = document.createElement('div');
+      d.className = 'ui';
+      d.innerHTML = window.BlockView.blocks(u.code) + '<span class="uc"></span><span class="un"></span>';
+      d.querySelector('.uc').innerHTML = hlHtml(u.code);
+      d.querySelector('.un').textContent = u.note || '';
+      box.appendChild(d);
+    });
+  }
+
+  // えらぶ問題
+  function openQuiz(ls, i) {
+    show('qz');
+    el.crumb.textContent = ls.title + '　›　演習' + (i + 1);
+    $('.qcrumb').textContent = ls.title + '　›　演習 ' + (i + 1) + ' / ' + ls.exercises.length;
+    $('.qtitle').textContent = ex.title;
+    $('.qtext').textContent = ex.question || '';
+    const B = window.BlockView;
+    const cbox = $('.qcode');
+    cbox.innerHTML = ex.code ? (ex.codeView === 'code' || !B ? '<pre class="code">' + hlHtml(ex.code) + '</pre>' : B.table(ex.code, { highlight: (t) => (t.trim() ? hlHtml(t) : ' ') })) : '';
+    const fb = $('.qfb');
+    fb.className = 'qfb hidden';
+    fb.textContent = '';
+    $('.qnext').classList.add('hidden');
+    const chs = $('.qchoices');
+    chs.innerHTML = '';
+    let tried = 0;
+    ex.choices.forEach((c, k) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'qch';
+      let inner = '<span class="qk">' + 'ABCD'[k] + '</span>';
+      if (c.block && B) inner += B.blocks(c.block);
+      else if (c.code) inner += '<span class="qc">' + hlHtml(c.code) + '</span>';
+      else inner += '<span></span>';
+      b.innerHTML = inner;
+      if (!c.block && !c.code) b.lastChild.textContent = c.text || '';
+      b.addEventListener('click', () => {
+        if (!$('.qnext').classList.contains('hidden')) return;
+        tried++;
+        if (k === ex.answer) {
+          b.classList.add('ok');
+          fb.className = 'qfb ok';
+          fb.textContent = '正解！　' + (ex.explain || '');
+          $('.qnext').classList.remove('hidden');
+          $('.qnext').textContent = exIdx + 1 < lesson.exercises.length ? '次の演習へ' : '一覧にもどる';
+          if (!cleared.has(ex.id)) cleared.add(ex.id);
+          if (isStudent()) authApi({ action: 'record', ex: ex.id, ok: true });
+        } else {
+          b.classList.add('ng');
+          fb.className = 'qfb ng';
+          fb.textContent = (c.why || 'ちがうよ。') + '　もう一度えらんでね。' + (tried >= 2 && ex.hint ? '\nヒント：' + ex.hint : '');
+          if (isStudent()) authApi({ action: 'record', ex: ex.id, ok: false });
+        }
+      });
+      chs.appendChild(b);
+    });
+  }
+  $('.qnext').addEventListener('click', () => { if (exIdx + 1 < lesson.exercises.length) openExercise(lesson, exIdx + 1); else renderHome(); });
+  $('.qslides').addEventListener('click', () => openSlides(lesson, 0));
 
   async function prepare() {
     setBusy(true, '準備中…');

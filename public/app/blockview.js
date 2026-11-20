@@ -322,5 +322,9 @@
     ] }
   ];
 
-  root.BlockView = { rows, table, lineRow, parseExpr, CSS, REFERENCE, CAT };
+  // ブロックだけを縦に並べる（左の「使うコード」や選ぶ問題で使う）
+  function blocks(code) {
+    return '<span class="bv-stack">' + rows(code).filter((r) => r.kind !== 'blank' && r.kind !== 'def' && r.kind !== 'comment').map((r) => '<span class="bv-sl" style="padding-left:' + (r.indent * 12) + 'px">' + blockHtml(r) + '</span>').join('') + '</span>';
+  }
+  root.BlockView = { rows, table, blocks, lineRow, parseExpr, CSS: CSS + '.bv-stack{display:inline-flex;flex-direction:column;gap:3px;align-items:flex-start}.bv-sl{display:block}', REFERENCE, CAT };
 })(typeof window !== 'undefined' ? window : globalThis);

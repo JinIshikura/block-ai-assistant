@@ -39,9 +39,19 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
   ok(pills.length === want && /スライド/.test(pills[0]), '一覧に回と演習が並ぶ（すべて開いている）: ' + pills.length);
   qa('.home .pill.slides')[0].click(); await wait(50);
   ok(q('.slide h1').textContent.length > 0 && (q('.slide .bv-row .bv-blk') || q('.slide pre.code')), 'スライドに、ブロックとコードの対応表が出る');
-  for (let i = 0; i < 4; i++) { q('.slide .nx').click(); await wait(20); }
+  for (let i = 0; i < 10 && q('.slide .nx').textContent !== '演習へ'; i++) { q('.slide .nx').click(); await wait(20); }
   ok(q('.slide .nx').textContent === '演習へ', '最後のスライドで「演習へ」');
-  q('.slide .nx').click(); await wait(400);
+  q('.slide .nx').click(); await wait(100);
+  // えらぶ問題（2問）
+  ok(!q('.qz').classList.contains('hidden') && qa('.qchoices .qch').length === 4 && q('.qch .bv-blk'), 'えらぶ問題が出る（選択肢はブロック）');
+  qa('.qchoices .qch')[1].click(); await wait(20);
+  ok(q('.qfb').classList.contains('ng') && q('.qnext').classList.contains('hidden'), 'まちがえると理由が出て、先へは進めない');
+  qa('.qchoices .qch')[0].click(); await wait(20);
+  ok(q('.qfb').classList.contains('ok') && !q('.qnext').classList.contains('hidden'), '正解すると「次へ」が出る');
+  q('.qnext').click(); await wait(50);
+  qa('.qchoices .qch')[1].click(); await wait(20);
+  q('.qnext').click(); await wait(400);
+  ok(qa('.uses .ui').length >= 2 && q('.uses .bv-blk') && /move/.test(q('.uses').textContent), '左に「この課題で使うコード」がブロックつきで出る');
   const lp = sent.find((m) => m.method === 'loadProject');
   ok(lp && lp.params.sb3 && lp.params.sb3.byteLength > 1000, '演習を開くと、課題の作品（sb3）を読みこませる');
   ok(sent.filter((m) => m.method === 'replaceScripts').length >= 1, '最初のコードを作品に入れる');
@@ -57,9 +67,9 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
   const ta = q('textarea.code'); ta.value = ta.value.replace('move(10)', 'move(100)'); ta.dispatchEvent(new w.Event('input'));
   q('.jbtn').click(); await wait(400);
   ok(!q('.over.clear').classList.contains('hidden'), '直して判定するとクリア');
-  ok(![...root.querySelectorAll('button')].some((b) => /答え/.test(b.textContent) && !b.classList.contains('askok')), '「答えを見る」はない');
+  { const bad = [...root.querySelectorAll('button')].filter((b) => !b.classList.contains('qch') && !b.classList.contains('pill') && !b.classList.contains('askok') && /答え/.test(b.textContent)).map((b) => b.className + ':' + b.textContent); ok(bad.length === 0, '「答えを見る」はない ' + bad.join(',')); }
   q('.clear .next').click(); await wait(400);
-  ok(/言うことを変えよう/.test(q('.ex-title').textContent), '次の演習へ進む');
+  ok(/待ってから回ろう/.test(q('.ex-title').textContent), '次の演習へ進む');
   // ヒント
   q('.hintb').click(); q('.hintb').click(); await wait(20);
   ok(qa('.hint').length === 2, 'ヒントを順に表示');
