@@ -322,9 +322,72 @@
     ] }
   ];
 
+  // ---- Python で使う英単語の意味 ----
+  // [読み方, 英語の意味, プログラムでの使い方（なくてもよい）]
+  const WORDS = {
+    move: ['ムーブ', '動く・動かす'], turn: ['ターン', '回る・回す'], right: ['ライト', '右'], left: ['レフト', '左'],
+    point: ['ポイント', '向ける・指す'], in: ['イン', '〜の中に・〜で'], direction: ['ディレクション', '方向・向き'],
+    wait: ['ウェイト', '待つ'], print: ['プリント', '印刷する', '画面に文字を出す（このツールでは「言う」）'],
+    say: ['セイ', '言う'], for: ['フォー', '〜のあいだ・〜について', 'for 文では「〜のそれぞれについて、くり返す」'],
+    go: ['ゴー', '行く'], to: ['トゥー', '〜へ'], change: ['チェンジ', '変える'], set: ['セット', '決める・設定する'],
+    x: ['エックス', '横の位置（x座標）'], y: ['ワイ', 'たての位置（y座標）'],
+    when: ['ウェン', '〜のとき'], flag: ['フラッグ', '旗'], clicked: ['クリックト', 'クリックされた'],
+    def: ['デフ', 'define（デファイン＝決める・定義する）の略', '命令のまとまりを作って、名前をつける'],
+    script: ['スクリプト', '台本', 'プログラムのまとまり'],
+    while: ['ワイル', '〜のあいだ', '条件が正しいあいだ、くり返す'], True: ['トゥルー', '本当・正しい'], False: ['フォールス', 'うそ・正しくない'],
+    range: ['レンジ', '範囲', 'range(3) は 0, 1, 2 の3つ'], i: ['アイ', 'index（インデックス＝番号）の頭文字', 'くり返しの何回目かを入れる変数によく使う名前'],
+    if: ['イフ', 'もし'], else: ['エルス', 'そうでなければ'], elif: ['エリフ', 'else if（そうでなく、もし）の略'],
+    key: ['キー', 'キーボードのキー'], pressed: ['プレスト', '押された'], touching: ['タッチング', '触れている'],
+    position: ['ポジション', '位置'], random: ['ランダム', 'でたらめ・無作為', '毎回ちがう数（乱数）を出す'],
+    input: ['インプット', '入力', 'キーボードから答えを入れてもらう'], int: ['イント', 'integer（インテジャー＝整数）の略', '数にする'],
+    str: ['ストラ', 'string（ストリング＝文字列）の略', '文字にする'], broadcast: ['ブロードキャスト', '放送する', 'ほかのスプライトみんなにメッセージを送る'],
+    received: ['レシーブド', '受け取った'], append: ['アペンド', '付け足す', 'リストのいちばん後ろに追加する'],
+    len: ['レン', 'length（レングス＝長さ）の略', 'リストに入っている数'], and: ['アンド', 'かつ・そして'], or: ['オア', 'または'], not: ['ノット', '〜ではない'],
+    import: ['インポート', '取りこむ', 'ほかの命令のセットを使えるようにする'], time: ['タイム', '時間'], sleep: ['スリープ', '眠る', '〇秒止まる'],
+    randint: ['ランドイント', 'random integer（ランダムな整数）', '〇から〇までの整数をランダムに出す'],
+    show: ['ショウ', '見せる'], hide: ['ハイド', 'かくす'], next: ['ネクスト', '次の'], costume: ['コスチューム', '衣装'], stop: ['ストップ', '止める']
+  };
+  const SKIP = new Set(['script1', 'script2', 'script3']);
+  // コードの中の英語の名前（命令・文法）を、出てきた順に返す
+  function wordsIn(code) {
+    const out = [];
+    const seen = new Set();
+    String(code || '').split('\n').forEach((line) => {
+      let s = '';
+      let q = '';
+      for (const ch of line) {
+        if (q) { if (ch === q) q = ''; continue; }
+        if (ch === '"' || ch === "'") { q = ch; s += ' '; continue; }
+        if (ch === '#') break;
+        s += ch;
+      }
+      (s.match(/[A-Za-z_][A-Za-z0-9_]*/g) || []).forEach((name) => {
+        if (seen.has(name) || SKIP.has(name) || /^script\d+$/.test(name)) return;
+        const parts = name.split('_').filter(Boolean).map((w) => ({ w, d: WORDS[w] }));
+        if (!parts.some((p) => p.d)) return;
+        seen.add(name);
+        out.push({ name, parts });
+      });
+    });
+    return out;
+  }
+  // 「turn（ターン）回る ＋ right（ライト）右」のような説明（HTML）
+  function wordHtml(item, opts) {
+    const o = opts || {};
+    const p = item.parts.map((x) => (x.d ? '<b>' + esc(x.w) + '</b><span class="bv-yomi">（' + esc(x.d[0]) + '）</span>' + esc(x.d[1]) : '<b>' + esc(x.w) + '</b>')).join(' ＋ ');
+    const use = item.parts.length === 1 && item.parts[0].d && item.parts[0].d[2] ? '<span class="bv-use">→ ' + esc(item.parts[0].d[2]) + '</span>' : '';
+    return (item.parts.length > 1 ? '<code class="bv-wn">' + esc(item.name) + '</code> ' : '') + p + (o.noUse ? '' : use);
+  }
+  const wordText = (item) => item.parts.map((x) => (x.d ? x.w + '＝' + x.d[1] : x.w)).join('、');
+
   // ブロックだけを縦に並べる（左の「使うコード」や選ぶ問題で使う）
   function blocks(code) {
     return '<span class="bv-stack">' + rows(code).filter((r) => r.kind !== 'blank' && r.kind !== 'def' && r.kind !== 'comment').map((r) => '<span class="bv-sl" style="padding-left:' + (r.indent * 12) + 'px">' + blockHtml(r) + '</span>').join('') + '</span>';
   }
-  root.BlockView = { rows, table, blocks, lineRow, parseExpr, CSS: CSS + '.bv-stack{display:inline-flex;flex-direction:column;gap:3px;align-items:flex-start}.bv-sl{display:block}', REFERENCE, CAT };
+  const WCSS = '.bv-words{background:#F6F2FF;border:1px solid #E1D6FA;border-radius:10px;padding:8px 12px;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.6}.bv-words .bv-wt{font-size:12px;font-weight:700;color:#4B23A3}.bv-words b{font-family:"BIZ UDGothic",Consolas,Menlo,monospace;color:#3B2C82}.bv-yomi{font-size:12px;color:#6B7280;margin-right:4px}.bv-use{display:block;font-size:12.5px;color:#555B63;margin-left:12px}.bv-wn{font-family:"BIZ UDGothic",Consolas,Menlo,monospace;background:#EEF0F3;border-radius:4px;padding:0 5px;margin-right:4px}';
+  function wordsBox(list, title) {
+    if (!list.length) return '';
+    return '<div class="bv-words"><span class="bv-wt">' + esc(title || 'ことばの意味') + '</span>' + list.map((w) => '<div>' + wordHtml(w) + '</div>').join('') + '</div>';
+  }
+  root.BlockView = { rows, table, blocks, lineRow, parseExpr, wordsIn, wordHtml, wordText, wordsBox, WORDS, CSS: CSS + WCSS + '.bv-stack{display:inline-flex;flex-direction:column;gap:3px;align-items:flex-start}.bv-sl{display:block}', REFERENCE, CAT };
 })(typeof window !== 'undefined' ? window : globalThis);

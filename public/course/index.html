@@ -29,12 +29,14 @@
 (async function () {
   const B = window.BlockView;
   const st = document.createElement('style');
-  st.textContent = B.CSS + '.bv-cd{font-size:15px}';
+  st.textContent = B.CSS + '.bv-cd{font-size:15px}.slide .bv-words{margin:6px 0 10px}';
   document.head.appendChild(st);
   const course = await fetch('/learn/course.json', { cache: 'no-cache' }).then((r) => r.json());
   const pick = document.getElementById('pick');
   const lessons = [];
   course.steps.forEach((s) => s.lessons.forEach((l) => { lessons.push({ step: s.title, l }); const o = document.createElement('option'); o.value = lessons.length - 1; o.textContent = s.title.replace('　', ' ') + '｜' + l.title; pick.appendChild(o); }));
+  const wordFirst = {};
+  course.steps.forEach((st) => st.lessons.forEach((l) => l.slides.forEach((sl, k) => { if (sl.code) B.wordsIn(sl.code).forEach((w) => { if (!wordFirst[w.name]) wordFirst[w.name] = l.id + ':' + k; }); })));
   const esc = (t) => String(t).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   function show(i) {
     const { step, l } = lessons[i];
@@ -45,6 +47,7 @@
       d.className = 'slide';
       d.innerHTML = '<div class="meta">' + esc(step) + '　' + esc(l.title) + '　スライド ' + (k + 1) + ' / ' + l.slides.length + '</div><h2>' + esc(s.title) + '</h2>' +
         String(s.text || '').split('\n').map((t) => '<p>' + esc(t) + '</p>').join('') +
+        B.wordsBox(s.code ? B.wordsIn(s.code).filter((w) => wordFirst[w.name] === l.id + ':' + k) : [], '新しく出てきた英語の意味') +
         (s.code ? (s.plain ? '<pre class="plain">' + esc(s.code) + '</pre>' : B.table(s.code)) : '');
       box.appendChild(d);
     });

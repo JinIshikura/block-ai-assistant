@@ -39,6 +39,7 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
   ok(pills.length === want && /スライド/.test(pills[0]), '一覧に回と演習が並ぶ（すべて開いている）: ' + pills.length);
   qa('.home .pill.slides')[0].click(); await wait(50);
   ok(q('.slide h1').textContent.length > 0 && (q('.slide .bv-row .bv-blk') || q('.slide pre.code')), 'スライドに、ブロックとコードの対応表が出る');
+  ok(q('.slide .bv-words') && /move/.test(q('.slide .bv-words').textContent) && /動く/.test(q('.slide .bv-words').textContent), 'スライドに、新しく出てきた英語の意味が出る（move＝動く）');
   for (let i = 0; i < 10 && q('.slide .nx').textContent !== '演習へ'; i++) { q('.slide .nx').click(); await wait(20); }
   ok(q('.slide .nx').textContent === '演習へ', '最後のスライドで「演習へ」');
   q('.slide .nx').click(); await wait(100);

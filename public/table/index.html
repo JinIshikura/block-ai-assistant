@@ -55,6 +55,10 @@
     });
     list.appendChild(box);
   });
+  const wb = document.createElement('section');
+  wb.className = 'grp';
+  wb.innerHTML = '<h2><i style="background:#7C4FD0"></i>英語の意味</h2>' + Object.keys(B.WORDS).map((w) => '<div class="item" style="font-size:14px">' + B.wordHtml({ name: w, parts: [{ w, d: B.WORDS[w] }] }) + '</div>').join('');
+  list.appendChild(wb);
 })();
 </script>
 </body>

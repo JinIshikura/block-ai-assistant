@@ -133,6 +133,8 @@
   .ea-bar { flex: none; min-height: 30px; display: flex; align-items: center; gap: 8px; padding: 4px 12px; font: 13px/1.4 system-ui, "Hiragino Sans", "Yu Gothic UI", sans-serif; color: #AEB4BE; background: rgba(127,127,160,.08); border-top: 1px solid rgba(127,127,160,.2); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
   .ea-bar code u { text-decoration: none; background: rgba(156,196,255,.25); border-radius: 3px; padding: 0 2px; }
   .ea-bar .ah { color: #F5D88A; }
+  .ea-bar .aw { color: #C9B8EF; }
+  .ea-bar.light .aw { color: #5B3BB0; }
   .ea-bar.light .ah { color: #8A5A00; }
   .ea-bar code { font-family: "BIZ UDGothic", Consolas, Menlo, monospace; color: #9CC4FF; font-weight: 700; }
   .ea-bar.light { color: #4A5163; background: #F6F7F9; border-top-color: #E3E7EE; }
@@ -364,7 +366,9 @@
             const a = /条件/.test(sig) ? '条件' : '回数';
             help = '<span class="ah">' + a + '：' + esc(ARG_HELP[a]) + '</span>';
           }
-          bar.innerHTML = html + '<span>' + esc(descOf(it)) + '</span>' + help;
+          let wm = '';
+          try { const W = root.BlockView && root.BlockView.wordsIn(name + '()'); if (W && W.length) wm = '<span class="aw">' + esc(root.BlockView.wordText(W[0])) + '</span>'; } catch (e) { /* noop */ }
+          bar.innerHTML = html + '<span>' + esc(descOf(it)) + '</span>' + help + wm;
           return;
         }
       }

@@ -190,6 +190,9 @@
   .uses .ui { display: flex; flex-direction: column; gap: 3px; padding: 7px 0; border-top: 1px solid #EEF0F3; }
   .uses .uc { font-family: "BIZ UDGothic", Consolas, Menlo, monospace; font-size: 12.5px; background: #1E1F23; color: #E6E6E6; border-radius: 5px; padding: 3px 8px; white-space: pre; align-self: flex-start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
   .uses .un { font-size: 11.5px; color: #555B63; line-height: 1.5; }
+  .uses .uw { font-size: 11.5px; color: #4B23A3; line-height: 1.5; }
+  .uses .uw:empty { display: none; }
+  .slide .bv-words { margin-top: 4px; }
   .uses .bv-blk { font-size: 12px; padding: 3px 8px; }
   .qz { flex: 1; overflow: auto; padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
   .qcard { width: 100%; max-width: 820px; padding: 22px 28px; display: flex; flex-direction: column; gap: 12px; }
@@ -437,6 +440,12 @@
     el.slide.querySelector('.cnt').textContent = 'スライド ' + (slideIdx + 1) + ' / ' + ls.slides.length;
     el.slide.querySelector('h1').textContent = s.title;
     String(s.text || '').split('\n').forEach((t) => { const p = document.createElement('p'); p.textContent = t; el.slide.querySelector('.body').appendChild(p); });
+    // このスライドで初めて出てくる英語の意味
+    if (window.BlockView && s.code) {
+      const here = ls.id + ':' + i;
+      const list = window.BlockView.wordsIn(s.code).filter((w) => wordFirst[w.name] === here);
+      if (list.length) el.slide.querySelector('.body').insertAdjacentHTML('beforeend', window.BlockView.wordsBox(list, '新しく出てきた英語の意味'));
+    }
     if (s.code && (s.plain || !window.BlockView)) el.slide.querySelector('pre.code').innerHTML = hlHtml(s.code);
     else if (s.code) el.slide.querySelector('.bvslide').innerHTML = window.BlockView.table(s.code, { highlight: (t) => (t.trim() ? hlHtml(t) : ' ') }) + (s.plain === false ? '' : '');
     if (s.image) {
@@ -520,6 +529,17 @@
     await prepare();
   }
 
+  // 英語の名前が、どのスライドで初めて出てくるか
+  let wordFirst = {};
+  function buildWordFirst() {
+    wordFirst = {};
+    if (!window.BlockView || !course) return;
+    course.steps.forEach((st) => st.lessons.forEach((l) => l.slides.forEach((sl, k) => {
+      if (!sl.code) return;
+      window.BlockView.wordsIn(sl.code).forEach((w) => { if (!wordFirst[w.name]) wordFirst[w.name] = l.id + ':' + k; });
+    })));
+  }
+
   // 左の「この課題で使うコード」（ブロックとの対応つき）
   function renderUses() {
     const box = $('.uses');
@@ -533,9 +553,11 @@
     list.forEach((u) => {
       const d = document.createElement('div');
       d.className = 'ui';
-      d.innerHTML = window.BlockView.blocks(u.code) + '<span class="uc"></span><span class="un"></span>';
+      d.innerHTML = window.BlockView.blocks(u.code) + '<span class="uc"></span><span class="un"></span><span class="uw"></span>';
       d.querySelector('.uc').innerHTML = hlHtml(u.code);
       d.querySelector('.un').textContent = u.note || '';
+      const ws = window.BlockView.wordsIn(u.code);
+      d.querySelector('.uw').textContent = ws.length ? 'ことば：' + ws.map((w) => window.BlockView.wordText(w)).join('／') : '';
       box.appendChild(d);
     });
   }
@@ -1031,6 +1053,7 @@
         g.items.forEach((it) => { h += '<div class="item">' + B.table(it.code, { noHead: true, highlight: (t) => (t.trim() ? hlHtml(t) : ' ') }) + '<div class="note">' + it.note.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])) + '</div></div>'; });
         h += '</section>';
       });
+      h += '<section class="grp"><h2><i style="background:#7C4FD0"></i>英語の意味</h2>' + Object.keys(B.WORDS).map((w) => '<div class="item">' + B.wordHtml({ name: w, parts: [{ w, d: B.WORDS[w] }] }) + '</div>').join('') + '</section>';
       h += '<div style="text-align:center;margin:10px auto 20px"><button class="bigbtn back-ref" type="button">もどる</button></div>';
       v.innerHTML = h;
       v.dataset.done = '1';
@@ -1067,6 +1090,7 @@
       try {
         const r = await fetch('/learn/course.json', { cache: 'no-cache' });
         course = await r.json();
+        buildWordFirst();
         await loadProgress();
       } catch (e) {
         el.home.innerHTML = '<div class="jnote" style="padding:20px">課題を読みこめませんでした。インターネットにつながっているか確かめてね。</div>';
