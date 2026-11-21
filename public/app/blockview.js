@@ -347,6 +347,14 @@
     randint: ['ランドイント', 'random integer（ランダムな整数）', '〇から〇までの整数をランダムに出す'],
     show: ['ショウ', '見せる'], hide: ['ハイド', 'かくす'], next: ['ネクスト', '次の'], costume: ['コスチューム', '衣装'], stop: ['ストップ', '止める']
   };
+  // 2つ以上の英語をつなげた名前の、まとめた意味
+  const COMBO = {
+    say_for: '〇秒のあいだ言う', go_to: '〜へ行く', turn_right: '右に回す', turn_left: '左に回す', point_in_direction: '〜の方向に向ける',
+    change_x: 'x（横の位置）を変える', change_y: 'y（たての位置）を変える', set_x: 'x を決める', set_y: 'y を決める',
+    key_pressed: 'キーが押された', x_position: 'x（横）の位置', y_position: 'y（たて）の位置',
+    when_flag_clicked: '旗がクリックされたとき', when_key_pressed: 'キーが押されたとき', when_broadcast_received: 'メッセージを受け取ったとき',
+    next_costume: '次の衣装にする'
+  };
   const SKIP = new Set(['script1', 'script2', 'script3']);
   // コードの中の英語の名前（命令・文法）を、出てきた順に返す
   function wordsIn(code) {
@@ -376,9 +384,10 @@
     const o = opts || {};
     const p = item.parts.map((x) => (x.d ? '<b>' + esc(x.w) + '</b><span class="bv-yomi">（' + esc(x.d[0]) + '）</span>' + esc(x.d[1]) : '<b>' + esc(x.w) + '</b>')).join(' ＋ ');
     const use = item.parts.length === 1 && item.parts[0].d && item.parts[0].d[2] ? '<span class="bv-use">→ ' + esc(item.parts[0].d[2]) + '</span>' : '';
-    return (item.parts.length > 1 ? '<code class="bv-wn">' + esc(item.name) + '</code> ' : '') + p + (o.noUse ? '' : use);
+    const combo = COMBO[item.name] ? '<span class="bv-use">→ まとめて「' + esc(COMBO[item.name]) + '」</span>' : '';
+    return (item.parts.length > 1 ? '<code class="bv-wn">' + esc(item.name) + '</code> ' : '') + p + (o.noUse ? '' : use + combo);
   }
-  const wordText = (item) => item.parts.map((x) => (x.d ? x.w + '＝' + x.d[1] : x.w)).join('、');
+  const wordText = (item) => item.parts.map((x) => (x.d ? x.w + '＝' + x.d[1] : x.w)).join('、') + (COMBO[item.name] ? '（' + COMBO[item.name] + '）' : '');
 
   // ブロックだけを縦に並べる（左の「使うコード」や選ぶ問題で使う）
   function blocks(code) {
