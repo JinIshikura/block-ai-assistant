@@ -76,7 +76,7 @@
     <form class="addf row">
       <label>ID（半角の英小文字・数字）<input name="uid" placeholder="例：k2026-01" required></label>
       <label>名前（ニックネーム可）<input name="nick" placeholder="例：たろう"></label>
-      <label>初期パスワード（空なら自動）<input name="initpw" placeholder="自動で作る"></label>
+      <label>初期パスワード（空なら自動・名前でもOK）<input name="initpw" placeholder="自動で作る"></label>
       <button class="pri" type="submit">追加</button>
     </form>
     <details style="margin-top:12px">
@@ -180,8 +180,21 @@
       else tr.children[2].textContent = s.init || '';
       const acts = tr.children[3].firstChild;
       const b1 = document.createElement('button'); b1.type = 'button'; b1.textContent = '再発行';
-      b1.title = '新しい初期パスワードを作る';
-      b1.addEventListener('click', async () => { b1.disabled = true; const d = await api({ action: 'reset', id: s.id }); b1.disabled = false; if (d.ok) { Object.assign(s, d.student); render(); msg($('.amsg'), 'ok', s.id + ' の初期パスワードを再発行しました。'); } });
+      b1.title = '新しい初期パスワードにする（自分で決めるか、自動で作る）';
+      b1.addEventListener('click', () => {
+        const td = tr.children[2];
+        td.innerHTML = '<div class="row" style="gap:6px"><input class="mono" style="min-height:34px;flex:1" placeholder="空なら自動"><button type="button" class="pri" style="min-height:34px">再発行</button><button type="button" style="min-height:34px">やめる</button></div>';
+        const inp = td.querySelector('input'); inp.value = s.name || ''; inp.focus(); inp.select();
+        const [go, cancel] = td.querySelectorAll('button');
+        cancel.addEventListener('click', render);
+        go.addEventListener('click', async () => {
+          go.disabled = true;
+          const d = await api({ action: 'reset', id: s.id, password: inp.value });
+          go.disabled = false;
+          if (d.ok) { Object.assign(s, d.student); render(); msg($('.amsg'), 'ok', s.id + ' の初期パスワードを再発行しました。'); }
+          else msg($('.amsg'), 'ng', d.error || '再発行できませんでした');
+        });
+      });
       const b2 = document.createElement('button'); b2.type = 'button'; b2.textContent = '名前を変える';
       b2.addEventListener('click', () => {
         const td = tr.children[1];

@@ -1,6 +1,6 @@
 // ログイン・生徒の管理（POST /api/auth に { action, ... } を送る）
 import {
-  authReady, sameText, validId, validPassword, getUser, putUser, newStudent, setPassword,
+  authReady, sameText, validId, validPassword, validInitialPassword, getUser, putUser, newStudent, setPassword,
   createSession, getSession, tooManyFails, addFail, clearFails, listStudents, makePassword, hashPassword, SIM_ID, sessionCookie
 } from '../../lib/auth.js';
 
@@ -117,8 +117,8 @@ export async function onRequestPost({ request, env }) {
       if (!validId(id)) { errors.push(id + '：IDは半角の英小文字・数字・ - _ で3〜20文字（はじめは英数字）'); continue; }
       if (id === teacherId) { errors.push(id + '：先生のIDと同じにはできません'); continue; }
       if (await getUser(env, id)) { errors.push(id + '：もうあります'); continue; }
-      const pw = r.password ? String(r.password) : '';
-      if (pw && !validPassword(pw)) { errors.push(id + '：初期パスワードはスペースなしの6文字以上'); continue; }
+      const pw = r.password ? String(r.password).trim() : '';
+      if (pw && !validInitialPassword(pw)) { errors.push(id + '：初期パスワードは64文字までにしてください'); continue; }
       made.push(pub(await newStudent(env, id, r.name || id, pw || null, false)));
     }
     return json({ ok: errors.length === 0, students: made, errors });
@@ -126,8 +126,8 @@ export async function onRequestPost({ request, env }) {
   if (action === 'reset') {
     const u = await getUser(env, String(b.id || ''));
     if (!u) return fail('その生徒はいません', 404);
-    const pw = b.password ? String(b.password) : makePassword();
-    if (!validPassword(pw)) return fail('初期パスワードはスペースなしの6文字以上');
+    const pw = b.password && String(b.password).trim() ? String(b.password).trim() : makePassword();
+    if (!validInitialPassword(pw)) return fail('初期パスワードは64文字までにしてください');
     await setPassword(env, u, pw, true);
     await clearFails(env, u.id);
     return json({ ok: true, student: pub(u) });
