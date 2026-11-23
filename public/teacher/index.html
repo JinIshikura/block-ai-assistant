@@ -286,7 +286,12 @@
   (async () => {
     const h = await fetch('/api/health').then((r) => r.json()).catch(() => ({}));
     if (!h.auth) { showLogin(''); msg($('.lmsg'), 'ng', 'ログインのしくみが、まだCloudflareで設定されていません（KV の USERS と、TEACHER_ID・TEACHER_PASSWORD）。'); return; }
-    if (!token) return showLogin('');
+    if (!token) {
+      // ポータルで先生としてログインしていれば、そのまま入る（クッキー）
+      const c = await fetch('/api/auth', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: '{"action":"me"}' }).then((r) => r.json()).catch(() => ({}));
+      if (c.ok && c.token && c.user && c.user.role === 'teacher') { token = c.token; sessionStorage.setItem(KEY, token); return showAdmin(c.user); }
+      return showLogin('');
+    }
     const d = await api({ action: 'me' });
     if (d.ok && d.user.role === 'teacher') showAdmin(d.user); else showLogin('');
   })();

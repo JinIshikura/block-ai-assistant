@@ -58,6 +58,16 @@ const T = 'a'.repeat(64);
   d.querySelector('.lg .back').click(); await wait(10);
   ok(lg.hidden && !d.getElementById('records').hidden && !d.getElementById('loginBtn').hidden, 'ログインしないで使うと、名前の一覧とログインボタン');
 
+  // 先生でログインすると「管理画面」ボタン
+  w = await open(async (url, opt) => {
+    const b = opt && opt.body ? JSON.parse(opt.body) : {};
+    if (url === '/api/health') return res({ ok: true, auth: true });
+    if (b.action === 'me') return res({ ok: true, token: T, user: { id: 'teacher', role: 'teacher', name: '先生' } });
+    return res({ ok: false }, 401);
+  });
+  ok(!w.document.getElementById('adminBtn').hidden && w.document.getElementById('adminBtn').getAttribute('href') === '/teacher/' && !w.document.getElementById('records').hidden, '先生には管理画面ボタンが出て、記録表は全員分');
+  ok(d.getElementById('adminBtn').hidden, '生徒やログインなしでは管理画面ボタンは出ない');
+
   // Scratchの中の画面：クッキーのログインを優先する
   const dom2 = new JSDOM('<!doctype html><body></body>', { url: 'https://block-ai-assistant.pages.dev/app/', runScripts: 'outside-only' });
   const w2 = dom2.window;

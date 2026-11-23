@@ -14,6 +14,9 @@ body{margin:0;background:#F8FAFC;font-family:'Zen Maru Gothic',sans-serif;color:
 .who{font-weight:700}
 .tb{font:inherit;font-size:14px;font-weight:700;min-height:40px;padding:0 16px;border-radius:999px;border:1.5px solid #CBD5E1;background:#fff;color:#0F172A;cursor:pointer}
 .tb:hover{border-color:#94A3B8}
+a.tb{display:inline-flex;align-items:center;text-decoration:none}
+.tb.admin{background:#334155;border-color:#334155;color:#fff}
+.tb.admin:hover{background:#1E293B}
 .wrap{display:flex;flex-direction:column;align-items:center;gap:32px;padding:24px 24px 48px}
 h1{margin:0;font-size:44px;font-weight:700;letter-spacing:.04em}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
@@ -52,6 +55,7 @@ h2{margin:0;font-size:18px;font-weight:700}
 <body>
 <div class="top">
 <span class="who" id="who" hidden></span>
+<a class="tb admin" href="/teacher/" id="adminBtn" hidden>管理画面</a>
 <button class="tb" type="button" id="loginBtn" hidden>ログイン</button>
 <button class="tb" type="button" id="logoutBtn" hidden>ログアウト</button>
 </div>
@@ -231,6 +235,7 @@ function render(user) {
   who.hidden = !user;
   who.textContent = user ? user.name + ' さん' : '';
   document.getElementById('logoutBtn').hidden = !user;
+  document.getElementById('adminBtn').hidden = !(user && user.role === 'teacher');
   document.getElementById('loginBtn').hidden = !!user || !auth;
   if (mine) {
     recBtn.href = sheetUrl(mine);
