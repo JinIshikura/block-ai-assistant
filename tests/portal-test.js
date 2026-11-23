@@ -5,9 +5,10 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const html = fs.readFileSync('public/portal/index.html', 'utf8');
 const login = fs.readFileSync('public/app/login.js', 'utf8');
+const sheets = fs.readFileSync('public/portal/sheets.js', 'utf8');
 
 async function open(fetchImpl, stored) {
-  const dom = new JSDOM(html.replace('<script src="/app/login.js"></script>', '<script>' + login + '</script>'), {
+  const dom = new JSDOM(html.replace('<script src="/app/login.js"></script>', '<script>' + login + '</script>').replace('<script src="sheets.js"></script>', '<script>' + sheets + '</script>'), {
     url: 'https://block-ai-assistant.pages.dev/portal/', runScripts: 'dangerously',
     beforeParse(w) { w.fetch = fetchImpl; if (stored) w.localStorage.setItem('blockai:session', stored); w.HTMLElement.prototype.scrollIntoView = () => {}; }
   });
@@ -56,7 +57,18 @@ const T = 'a'.repeat(64);
   d.getElementById('logoutBtn').click(); await wait(30);
   ok(!lg.hidden && d.getElementById('recTitle').textContent === 'スコア記録表', 'ログアウトで元にもどり、ログイン画面が出る');
   d.querySelector('.lg .back').click(); await wait(10);
-  ok(lg.hidden && !d.getElementById('records').hidden && !d.getElementById('loginBtn').hidden, 'ログインしないで使うと、名前の一覧とログインボタン');
+  ok(lg.hidden && d.getElementById('records').hidden && !d.getElementById('loginBtn').hidden && d.getElementById('recSub').textContent === 'ログインするとひらく', 'ログインしないで使うと、ほかの人の記録表は出ない（ログインボタンあり）');
+  d.getElementById('recBtn').click(); await wait(10);
+  ok(!lg.hidden, '記録表のボタンを押すとログイン画面');
+
+  // 合う記録表がない生徒
+  w = await open(async (url, opt) => {
+    const b = opt && opt.body ? JSON.parse(opt.body) : {};
+    if (url === '/api/health') return res({ ok: true, auth: true });
+    if (b.action === 'me') return res({ ok: true, token: T, user: { id: 'k99', role: 'student', name: 'はなこ' } });
+    return res({ ok: false }, 401);
+  });
+  ok(w.document.getElementById('records').hidden && /先生に伝えて/.test(w.document.getElementById('recSub').textContent), '合わない生徒には一覧を出さず「先生に伝えてね」');
 
   // 先生でログインすると「管理画面」ボタン
   w = await open(async (url, opt) => {

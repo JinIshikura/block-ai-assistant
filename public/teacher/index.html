@@ -96,9 +96,9 @@
       <h2 style="margin:0">生徒の一覧 <span class="count note"></span></h2>
       <div class="row"><button class="reload" type="button">更新</button><button class="print" type="button">配布用カードを印刷</button></div>
     </div>
-    <div class="note" style="margin-bottom:8px">初期パスワードは、生徒が自分のパスワードに変えるまで表示されます。変えたあとは先生にも見えません（忘れたときは「再発行」）。</div>
+    <div class="note" style="margin-bottom:8px">「記録表」は、ポータルでその生徒が開く記録表です（名前・IDから自動で決まります）。ちがうときは public/portal/sheets.js の LINKS で直せます。初期パスワードは、生徒が自分のパスワードに変えるまで表示されます。変えたあとは先生にも見えません（忘れたときは「再発行」）。</div>
     <table>
-      <thead><tr><th>ID</th><th>名前</th><th>初期パスワード</th><th>操作</th></tr></thead>
+      <thead><tr><th>ID</th><th>名前</th><th>初期パスワード</th><th>記録表</th><th>操作</th></tr></thead>
       <tbody class="list"></tbody>
     </table>
   </section>
@@ -112,6 +112,7 @@
   </section>
   <section class="slips"></section>
 </main>
+<script src="/portal/sheets.js"></script>
 <script>
 (function () {
   'use strict';
@@ -172,13 +173,17 @@
     $('.count').textContent = '（' + students.filter((s) => !s.sim).length + '人' + (students.some((s) => s.sim) ? '＋シミュレーション用' : '') + '）';
     students.forEach((s) => {
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td class="mono"></td><td></td><td class="mono"></td><td><div class="acts"></div></td>';
+      tr.innerHTML = '<td class="mono"></td><td></td><td class="mono"></td><td></td><td><div class="acts"></div></td>';
       tr.children[0].textContent = s.id;
       tr.children[1].textContent = s.name;
       if (s.sim) tr.children[1].insertAdjacentHTML('beforeend', '<span class="tag sim">シミュレーション用</span>');
       if (s.changed) tr.children[2].innerHTML = '<span class="tag done">変更済み</span>';
       else tr.children[2].textContent = s.init || '';
-      const acts = tr.children[3].firstChild;
+      const PS = window.PortalSheets;
+      const sheet = PS && !s.sim ? PS.findSheet({ id: s.id, name: s.name }) : null;
+      if (sheet) { const a = document.createElement('a'); a.href = PS.sheetUrl(sheet); a.target = '_blank'; a.rel = 'noopener'; a.textContent = sheet[0]; tr.children[3].appendChild(a); }
+      else tr.children[3].innerHTML = '<span class="tag">なし</span>';
+      const acts = tr.children[4].firstChild;
       const b1 = document.createElement('button'); b1.type = 'button'; b1.textContent = '再発行';
       b1.title = '新しい初期パスワードにする（自分で決めるか、自動で作る）';
       b1.addEventListener('click', () => {

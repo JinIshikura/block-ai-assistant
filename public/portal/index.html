@@ -100,32 +100,8 @@ h2{margin:0;font-size:18px;font-weight:700}
 </section>
 </div>
 
+<script src="sheets.js"></script>
 <script>
-// =====================================================================
-// ▼記録表：[表示名, スプレッドシートのID, ログインIDの読み方（ローマ字）...]
-//   ログインした生徒の「名前」か「ID」が、表示名や読み方と合えば、その人の記録表になる
-// =====================================================================
-var S = 'https://docs.google.com/spreadsheets/d/';
-var SHEETS = [
-  ['ネフー','17_dPGQ0PaELXv--U7yjO6LcsKOdLt2StURE_oZPZugE','nefu','nehu'],
-  ['みどりー','1LoznsKM-tdSY5M-HJb1T0ThOdQKeGePxQREeXkd-TWA','midori'],
-  ['ゴロー','1wRVnMi2SpdT6JHJxYSy_8m83pxfwV4KqC4SNIFvWWo0','goro'],
-  ['イクー','1zaqi8tlBt6LJwi675EsP-u365f7rhlxtB_cauGBZ_1Y','iku'],
-  ['あっきー','1fUEiajN_Hi-8UkcwCouDBYtymB30HyZm1lb84TxQUPs','akki','aki'],
-  ['こうー','1M8MPhvFCgLLBYnPdPzp8SQHvErf5WThBngxlyL5EsYM','kou','koh'],
-  ['たのー','1BzxidGDatmRYlYB7QeshfvQZpqbprkS3XGsEx9acxDU','tano'],
-  ['レジー','1KuGujnvlH-kIWZydbKMsKyp5EJITmBpGKbv5gzRWjhQ','reji','rezi','regi','reggie'],
-  ['こちー','1e3EG1NqxmbGg9_UqpfbQunsuJVbLk4k60s1-ZBnP1WE','kochi','koti'],
-  ['いよぐん','1R8kzdQH-2RhAga6ADWNkRmkLEJy9ZbZlME95kT1mFbQ','iyogun','iyo'],
-  ['ライトー','1Acaoh0Qe8c1eZHLk03S1mroGj2aY4yct7vDscQ4btUs','raito','light','right'],
-  ['Vin','1o0XOJtq7g8SNal0OhA5Zn1pWBcJV1iytUON_ivjGGNo','vin','bin'],
-  ['だいー','18iKAad1mH3iKVhQiwOpmw5gXM2fKxWS_zX4wbEQp1ao','dai'],
-  ['うなー','18BPnN6XAySCul5nzCDsJLwqicN6SYkIWM0LJOvIvyLQ','una'],
-  ['ゼンー','1BLRGIwC4rOhsoL1ONp27rfffRD9RQOd-XyGdeWYM6Lc','zen']
-];
-// ▼うまく合わないときだけ：{ 'ログインID': '表示名' } で直接むすびつける（例：'k07': 'ゴロー'）
-var LINKS = {
-};
 // ▼素材：[グループ名, 色, [[表示名, 補足, URL], ...]]
 var MATS = [
   ['イラスト', '#BE185D', [
@@ -160,36 +136,8 @@ var OTHERS = [
   ['株式模擬トレード','株','#0F766E','https://docs.google.com/spreadsheets/d/1G0kE7qannqsKFuTqDq-v89CaW8BQKrQtKI_RVrw-Xck/edit']
 ];
 
-// ---------------------------------------------------------------------
-// 名前のゆれをそろえる（カタカナ→ひらがな、のばし棒・記号・数字・さん/くん を消す）
-function norm(s) {
-  s = String(s || '').normalize('NFKC').toLowerCase();
-  s = s.replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0x60); });
-  s = s.replace(/(さん|くん|ちゃん|君)$/, '');
-  return s.replace(/[\sー〜~\-_.・0-9]/g, '');
-}
-function findSheet(user) {
-  if (!user) return null;
-  var id = String(user.id || '').toLowerCase();
-  if (LINKS[id]) return SHEETS.find(function (r) { return r[0] === LINKS[id]; }) || null;
-  var name = norm(user.name);
-  var idLetters = id.replace(/[^a-z]/g, '');
-  var best = null, score = 0;
-  SHEETS.forEach(function (r) {
-    var key = norm(r[0]);
-    var sc = 0;
-    if (name && name === key) sc = 100;
-    else if (name.length >= 2 && key.length >= 2 && (name.indexOf(key) === 0 || key.indexOf(name) === 0)) sc = 60;
-    r.slice(2).forEach(function (a) {
-      if (idLetters === a) sc = Math.max(sc, 90);
-      else if (a.length >= 3 && idLetters.indexOf(a) === 0) sc = Math.max(sc, 50);
-      if (name === a) sc = Math.max(sc, 90);
-    });
-    if (sc > score) { score = sc; best = r; }
-  });
-  return best;
-}
-var sheetUrl = function (r) { return S + r[1] + '/edit'; };
+var PS = window.PortalSheets, SHEETS = PS.SHEETS, LINKS = PS.LINKS, findSheet = PS.findSheet, sheetUrl = PS.sheetUrl;
+
 
 // ---------------------------------------------------------------------
 var chips = document.getElementById('chips');
@@ -228,6 +176,7 @@ OTHERS.forEach(function (o) {
 var recBtn = document.getElementById('recBtn');
 var records = document.getElementById('records');
 var mine = null;
+var recMode = 'none';
 function render(user) {
   mine = user && user.role === 'student' ? findSheet(user) : null;
   var who = document.getElementById('who');
@@ -237,21 +186,24 @@ function render(user) {
   document.getElementById('logoutBtn').hidden = !user;
   document.getElementById('adminBtn').hidden = !(user && user.role === 'teacher');
   document.getElementById('loginBtn').hidden = !!user || !auth;
-  if (mine) {
-    recBtn.href = sheetUrl(mine);
-    document.getElementById('recTitle').textContent = mine[0] + 'の記録表';
-    document.getElementById('recSub').textContent = 'ひらく';
-    records.hidden = true;
-  } else {
-    recBtn.href = '#records';
-    document.getElementById('recTitle').textContent = 'スコア記録表';
-    document.getElementById('recSub').textContent = 'したの名前をえらぶ';
-    records.hidden = false;
-  }
+  // 記録表：生徒は自分の表だけ。全員分の一覧は先生（とログインのしくみがないとき）だけ
+  var title = 'スコア記録表', sub = '', showList = false;
+  recMode = 'none';
+  if (mine) { recMode = 'mine'; title = mine[0] + 'の記録表'; sub = 'ひらく'; }
+  else if (user && user.role === 'teacher') { recMode = 'list'; sub = '全員分は下'; showList = true; }
+  else if (user) { sub = '見つかりません（先生に伝えてね）'; }
+  else if (auth) { recMode = 'login'; sub = 'ログインするとひらく'; }
+  else { recMode = 'list'; sub = 'したの名前をえらぶ'; showList = true; }
+  recBtn.href = mine ? sheetUrl(mine) : '#records';
+  document.getElementById('recTitle').textContent = title;
+  document.getElementById('recSub').textContent = sub;
+  records.hidden = !showList;
 }
 recBtn.addEventListener('click', function (e) {
-  if (mine) return;
+  if (recMode === 'mine') return;
   e.preventDefault();
+  if (recMode === 'login') { window.BlockAuth.require(' '); return; }
+  if (recMode !== 'list') return;
   records.scrollIntoView({ behavior: 'smooth', block: 'center' });
   records.classList.add('flash');
   setTimeout(function () { records.classList.remove('flash'); }, 1200);
