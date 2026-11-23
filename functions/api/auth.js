@@ -1,11 +1,13 @@
 // ログイン・生徒の管理（POST /api/auth に { action, ... } を送る）
 import {
   authReady, sameText, validId, validPassword, getUser, putUser, newStudent, setPassword,
-  createSession, getSession, tooManyFails, addFail, clearFails, listStudents, makePassword, hashPassword, SIM_ID
+  createSession, getSession, tooManyFails, addFail, clearFails, listStudents, makePassword, hashPassword, SIM_ID, sessionCookie
 } from '../../lib/auth.js';
 
-function json(obj, status) {
-  return new Response(JSON.stringify(obj), { status: status || 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
+function json(obj, status, cookie) {
+  const headers = { 'content-type': 'application/json', 'cache-control': 'no-store' };
+  if (cookie) headers['set-cookie'] = cookie;
+  return new Response(JSON.stringify(obj), { status: status || 200, headers });
 }
 const fail = (message, status) => json({ ok: false, error: message }, status || 400);
 async function getProgress(env, id) {
@@ -34,7 +36,8 @@ export async function onRequestPost({ request, env }) {
       if (!sameText(pw, env.TEACHER_PASSWORD)) { await addFail(env, id); return fail('IDかパスワードがちがいます', 401); }
       await clearFails(env, id);
       const user = { id, role: 'teacher', name: '先生' };
-      return json({ ok: true, token: await createSession(env, user), user });
+      const token = await createSession(env, user);
+      return json({ ok: true, token, user }, 200, sessionCookie(token));
     }
     const u = validId(id) ? await getUser(env, id) : null;
     if (!u) { await addFail(env, id); return fail('IDかパスワードがちがいます', 401); }
@@ -42,21 +45,23 @@ export async function onRequestPost({ request, env }) {
     if (!sameText(h, u.hash)) { await addFail(env, id); return fail('IDかパスワードがちがいます', 401); }
     await clearFails(env, id);
     const user = { id: u.id, role: 'student', name: u.name, sim: !!u.sim };
-    return json({ ok: true, token: await createSession(env, user), user, mustChange: !!u.mustChange });
+    const token = await createSession(env, user);
+    return json({ ok: true, token, user, mustChange: !!u.mustChange }, 200, sessionCookie(token));
   }
 
   const s = await getSession(env, request);
-  if (!s) return fail('ログインしてね', 401);
+  if (!s) return json({ ok: false, error: 'ログインしてね' }, 401, action === 'logout' ? sessionCookie('') : null);
 
   if (action === 'me') {
     const user = { id: s.id, role: s.role, name: s.name, sim: !!s.sim };
     let mustChange = false;
     if (s.role === 'student') { const u = await getUser(env, s.id); if (!u) return fail('ログインしてね', 401); mustChange = !!u.mustChange; }
-    return json({ ok: true, user, mustChange });
+    // クッキーで入ってきた画面（Scratchの中など）には、合言葉もわたす
+    return json(Object.assign({ ok: true, user, mustChange }, s.viaCookie ? { token: s.token } : {}));
   }
   if (action === 'logout') {
     await env.USERS.delete('s:' + s.token);
-    return json({ ok: true });
+    return json({ ok: true }, 200, sessionCookie(''));
   }
   if (action === 'password') {
     if (s.role !== 'student') return fail('先生のパスワードは、Cloudflareの設定（TEACHER_PASSWORD）で変えてください');

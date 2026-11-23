@@ -1,12 +1,15 @@
 /* 生徒のログイン（サーバーにログインのしくみが設定されているときだけ使う）
  *  - ログイン画面と、初めてのときのパスワード変更
  *  - 合言葉（トークン）はこのPCのこのブラウザに保存し、12時間で切れる
+ *  - ポータル（/portal/）でログインしていれば、クッキーで受けとって自動でログインする
  *  - window.BlockAuth = { ready, enabled, token(), user(), logout(), require() }
+ *  - window.BlockAuthOptions = { backLabel, onBack }：「もどる」ボタンの名前と動き（ポータル用）
  */
 (function () {
   'use strict';
   const KEY = 'blockai:session';
   const HOST = window.BlockAIHost || { post() {} };
+  const OPT = window.BlockAuthOptions || {};
   let enabled = false;
   let token = '';
   let user = null;
@@ -46,7 +49,7 @@
       <label class="show"><input type="checkbox" class="showpw"> パスワードを表示する</label>
       <div class="err"></div>
       <button class="go" type="submit">ログイン</button>
-      <button class="sub back" type="button">Scratchにもどる</button>
+      <button class="sub back" type="button"></button>
     </form>
     <form class="box f-change" hidden>
       <h1>自分のパスワードを決めよう</h1>
@@ -60,13 +63,15 @@
   (document.body || document.documentElement).appendChild(el);
   const fLogin = el.querySelector('.f-login');
   const fChange = el.querySelector('.f-change');
+  fLogin.querySelector('.back').textContent = OPT.backLabel || 'Scratchにもどる';
   // Scratch のショートカットにキーを伝えない
   ['keydown', 'keyup', 'keypress'].forEach((t) => el.addEventListener(t, (e) => e.stopPropagation()));
 
   function save() { try { if (token) localStorage.setItem(KEY, token); else localStorage.removeItem(KEY); } catch (e) { /* noop */ } }
   function notify() { try { window.dispatchEvent(new CustomEvent('blockai-auth', { detail: { user } })); } catch (e) { /* noop */ } }
-  async function api(body) {
-    const r = await fetch('/api/auth', { method: 'POST', headers: Object.assign({ 'content-type': 'application/json' }, token ? { authorization: 'Bearer ' + token } : {}), body: JSON.stringify(body) });
+  async function api(body, cookieOnly) {
+    const useToken = token && !cookieOnly;
+    const r = await fetch('/api/auth', { method: 'POST', credentials: 'same-origin', headers: Object.assign({ 'content-type': 'application/json' }, useToken ? { authorization: 'Bearer ' + token } : {}), body: JSON.stringify(body) });
     let d = {};
     try { d = await r.json(); } catch (e) { d = { ok: false, error: 'サーバーの返事が読めませんでした' }; }
     d.status = r.status;
@@ -90,7 +95,9 @@
   function done() { el.hidden = true; lastPw = ''; notify(); }
 
   fLogin.querySelector('.showpw').addEventListener('change', (e) => { fLogin.elements.password.type = e.target.checked ? 'text' : 'password'; });
-  fLogin.querySelector('.back').addEventListener('click', () => HOST.post({ kind: 'close' }));
+  fLogin.querySelector('.back').addEventListener('click', () => {
+    if (typeof OPT.onBack === 'function') { el.hidden = true; OPT.onBack(); } else HOST.post({ kind: 'close' });
+  });
   fLogin.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = fLogin.querySelector('.go');
@@ -126,6 +133,9 @@
     try { h = await fetch('/api/health', { cache: 'no-store' }).then((r) => r.json()); } catch (e) { h = {}; }
     enabled = !!h.auth;
     if (!enabled) return;
+    // ポータルでいちばん最近ログインした人（クッキー）を優先する
+    const c = await api({ action: 'me' }, true).catch(() => ({ ok: false }));
+    if (c.ok && c.token) { token = c.token; user = c.user; save(); notify(); if (c.mustChange) showChange(); return; }
     if (token) {
       const d = await api({ action: 'me' }).catch(() => ({ ok: false }));
       if (d.ok) { user = d.user; notify(); if (d.mustChange) showChange(); return; }

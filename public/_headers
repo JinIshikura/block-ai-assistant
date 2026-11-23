@@ -19,3 +19,6 @@
 
 /course/*
   Cache-Control: no-cache
+
+/portal/*
+  Cache-Control: no-cache

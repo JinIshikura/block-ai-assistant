@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>みんなのポータル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#F8FAFC;font-family:'Zen Maru Gothic',sans-serif;color:#0F172A}
+[hidden]{display:none !important}
+.top{display:flex;justify-content:flex-end;align-items:center;gap:10px;padding:14px 20px 0;min-height:58px;font-size:15px}
+.who{font-weight:700}
+.tb{font:inherit;font-size:14px;font-weight:700;min-height:40px;padding:0 16px;border-radius:999px;border:1.5px solid #CBD5E1;background:#fff;color:#0F172A;cursor:pointer}
+.tb:hover{border-color:#94A3B8}
+.wrap{display:flex;flex-direction:column;align-items:center;gap:32px;padding:24px 24px 48px}
+h1{margin:0;font-size:44px;font-weight:700;letter-spacing:.04em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.search{width:100%;max-width:640px;display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #CBD5E1;border-radius:999px;padding:6px 6px 6px 22px}
+.search:focus-within{border-color:#1D4ED8}
+.search input{flex:1;min-width:0;border:none;outline:none;font-size:19px;font-family:inherit;background:transparent;height:48px}
+.search button{height:48px;padding:0 28px;border:none;border-radius:999px;background:#1D4ED8;color:#fff;font-size:17px;font-weight:700;font-family:inherit;cursor:pointer}
+.search button:hover{background:#1E40AF}
+.tiles{width:100%;max-width:960px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.tile{display:flex;flex-direction:column;justify-content:space-between;gap:16px;min-height:176px;padding:28px;border-radius:22px;color:#fff;text-decoration:none;transition:transform .12s}
+.tile:hover{transform:translateY(-3px)}
+.tile .t{font-size:30px;font-weight:700}
+.tile .s{font-size:16px}
+.orange{background:#C2410C}.blue{background:#1D4ED8}.green{background:#15803D}
+.card{width:100%;max-width:960px;background:#fff;border:1px solid #E2E8F0;border-radius:20px;padding:20px 24px;display:flex;flex-direction:column;gap:14px;scroll-margin-top:24px}
+.card.flash{box-shadow:0 0 0 4px #86EFAC}
+h2{margin:0;font-size:18px;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:10px}
+.chip{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border-radius:999px;background:#F0FDF4;border:1.5px solid #86EFAC;color:#14532D;font-size:17px;font-weight:700;text-decoration:none}
+.chip:hover{background:#DCFCE7}
+.others{width:100%;max-width:960px;display:flex;flex-direction:column;gap:12px}
+.others h2{font-size:15px;color:#475569}
+.mats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.mg{background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.mg h3{margin:0 0 2px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+.mg h3 span{width:10px;height:10px;border-radius:3px}
+.ml{display:flex;flex-direction:column;justify-content:center;min-height:44px;padding:6px 12px;border-radius:10px;background:#F8FAFC;color:#0F172A;text-decoration:none;font-size:15px}
+.ml:hover{background:#EEF2F7}
+.ml small{font-size:12px;color:#475569}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.o{display:flex;align-items:center;gap:10px;min-height:52px;padding:8px 12px;background:#fff;border:1px solid #E2E8F0;border-radius:14px;color:#0F172A;text-decoration:none;font-size:15px}
+.o:hover{border-color:#94A3B8}
+.b{flex:none;width:32px;height:32px;border-radius:9px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="top">
+<span class="who" id="who" hidden></span>
+<button class="tb" type="button" id="loginBtn" hidden>ログイン</button>
+<button class="tb" type="button" id="logoutBtn" hidden>ログアウト</button>
+</div>
+<div class="wrap">
+<h1>みんなのポータル</h1>
+
+<form class="search" action="https://www.google.com/search" method="get">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>
+<label for="q" class="sr">Googleで検索</label>
+<input id="q" name="q" type="search" placeholder="Googleでけんさく" autocomplete="off">
+<button type="submit">検索</button>
+</form>
+
+<div class="tiles">
+<a class="tile orange" href="https://scratch.mit.edu/">
+<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h5v-1a2 2 0 0 1 4 0v1h5v5h-1a2 2 0 0 0 0 4h1v4H4z"/></svg>
+<div><div class="t">スクラッチ</div><div class="s">作品をつくる</div></div>
+</a>
+<a class="tile blue" href="henkan-typing.html">
+<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="10"/><line x1="10" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="14" y2="10"/><line x1="18" y1="10" x2="18" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg>
+<div><div class="t">変換タイピング</div><div class="s">れんしゅうする</div></div>
+</a>
+<a class="tile green" href="#records" id="recBtn">
+<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+<div><div class="t" id="recTitle">スコア記録表</div><div class="s" id="recSub">したの名前をえらぶ</div></div>
+</a>
+</div>
+
+<section class="card" id="records">
+<h2 style="color:#14532D">記録表をひらく</h2>
+<div class="chips" id="chips"></div>
+</section>
+
+<section class="others">
+<h2>素材</h2>
+<div class="mats" id="mats"></div>
+</section>
+
+<section class="others">
+<h2>そのほか</h2>
+<div class="grid" id="others"></div>
+</section>
+</div>
+
+<script>
+// =====================================================================
+// ▼記録表：[表示名, スプレッドシートのID, ログインIDの読み方（ローマ字）...]
+//   ログインした生徒の「名前」か「ID」が、表示名や読み方と合えば、その人の記録表になる
+// =====================================================================
+var S = 'https://docs.google.com/spreadsheets/d/';
+var SHEETS = [
+  ['ネフー','17_dPGQ0PaELXv--U7yjO6LcsKOdLt2StURE_oZPZugE','nefu','nehu'],
+  ['みどりー','1LoznsKM-tdSY5M-HJb1T0ThOdQKeGePxQREeXkd-TWA','midori'],
+  ['ゴロー','1wRVnMi2SpdT6JHJxYSy_8m83pxfwV4KqC4SNIFvWWo0','goro'],
+  ['イクー','1zaqi8tlBt6LJwi675EsP-u365f7rhlxtB_cauGBZ_1Y','iku'],
+  ['あっきー','1fUEiajN_Hi-8UkcwCouDBYtymB30HyZm1lb84TxQUPs','akki','aki'],
+  ['こうー','1M8MPhvFCgLLBYnPdPzp8SQHvErf5WThBngxlyL5EsYM','kou','koh'],
+  ['たのー','1BzxidGDatmRYlYB7QeshfvQZpqbprkS3XGsEx9acxDU','tano'],
+  ['レジー','1KuGujnvlH-kIWZydbKMsKyp5EJITmBpGKbv5gzRWjhQ','reji','rezi','regi','reggie'],
+  ['こちー','1e3EG1NqxmbGg9_UqpfbQunsuJVbLk4k60s1-ZBnP1WE','kochi','koti'],
+  ['いよぐん','1R8kzdQH-2RhAga6ADWNkRmkLEJy9ZbZlME95kT1mFbQ','iyogun','iyo'],
+  ['ライトー','1Acaoh0Qe8c1eZHLk03S1mroGj2aY4yct7vDscQ4btUs','raito','light','right'],
+  ['Vin','1o0XOJtq7g8SNal0OhA5Zn1pWBcJV1iytUON_ivjGGNo','vin','bin'],
+  ['だいー','18iKAad1mH3iKVhQiwOpmw5gXM2fKxWS_zX4wbEQp1ao','dai'],
+  ['うなー','18BPnN6XAySCul5nzCDsJLwqicN6SYkIWM0LJOvIvyLQ','una'],
+  ['ゼンー','1BLRGIwC4rOhsoL1ONp27rfffRD9RQOd-XyGdeWYM6Lc','zen']
+];
+// ▼うまく合わないときだけ：{ 'ログインID': '表示名' } で直接むすびつける（例：'k07': 'ゴロー'）
+var LINKS = {
+};
+// ▼素材：[グループ名, 色, [[表示名, 補足, URL], ...]]
+var MATS = [
+  ['イラスト', '#BE185D', [
+    ['いらすとや', '', 'https://www.irasutoya.com/'],
+    ['AIイラスト', 'Bing Image Creator', 'https://www.bing.com/images/create?FORM=GENEXP'],
+    ['画像きりぬく', 'remove.bg', 'https://www.remove.bg/ja']
+  ]],
+  ['音声', '#7C3AED', [
+    ['ゆくも', '霊夢(AT1-F1)・魔理沙(AT1-F1)', 'https://www.yukumo.net/#/']
+  ]],
+  ['音楽', '#1D4ED8', [
+    ['DOVA', 'BGM', 'https://dova-s.jp/_contents/settingSound/'],
+    ['魔王魂', 'うた', 'https://maou.audio/category/song/'],
+    ['魔王魂', 'BGM', 'https://maou.audio/category/bgm/'],
+    ['甘茶の音楽工房', 'BGM', 'https://amachamusic.chagasi.com/']
+  ]],
+  ['効果音', '#B45309', [
+    ['効果音ラボ', '', 'https://soundeffect-lab.info/'],
+    ['魔王魂', '効果音', 'https://maou.audio/category/se/']
+  ]]
+];
+// ▼そのほか：[表示名, 1文字マーク, 色, URL]
+var OTHERS = [
+  ['シャイニングたいぴんぐ','シ','#B45309','https://scratch.mit.edu/projects/970641746/'],
+  ['寿司打','寿','#B91C1C','https://sushida.net/'],
+  ['しりとりタイピング','し','#7C3AED','https://www.e-typing.ne.jp/roma/variety/siritori.asp'],
+  ['ドキュメント','文','#1D4ED8','https://docs.google.com/document/u/0/'],
+  ['スライド','ス','#A16207','https://docs.google.com/presentation/u/0/'],
+  ['スプレッドシート','表','#15803D','https://docs.google.com/spreadsheets/u/0/'],
+  ['CapCut','C','#334155','https://www.capcut.com/ai-creator-home'],
+  ['ヤフーファイナンス','Y','#6D28D9','https://finance.yahoo.co.jp/'],
+  ['株式模擬トレード','株','#0F766E','https://docs.google.com/spreadsheets/d/1G0kE7qannqsKFuTqDq-v89CaW8BQKrQtKI_RVrw-Xck/edit']
+];
+
+// ---------------------------------------------------------------------
+// 名前のゆれをそろえる（カタカナ→ひらがな、のばし棒・記号・数字・さん/くん を消す）
+function norm(s) {
+  s = String(s || '').normalize('NFKC').toLowerCase();
+  s = s.replace(/[ァ-ヶ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0x60); });
+  s = s.replace(/(さん|くん|ちゃん|君)$/, '');
+  return s.replace(/[\sー〜~\-_.・0-9]/g, '');
+}
+function findSheet(user) {
+  if (!user) return null;
+  var id = String(user.id || '').toLowerCase();
+  if (LINKS[id]) return SHEETS.find(function (r) { return r[0] === LINKS[id]; }) || null;
+  var name = norm(user.name);
+  var idLetters = id.replace(/[^a-z]/g, '');
+  var best = null, score = 0;
+  SHEETS.forEach(function (r) {
+    var key = norm(r[0]);
+    var sc = 0;
+    if (name && name === key) sc = 100;
+    else if (name.length >= 2 && key.length >= 2 && (name.indexOf(key) === 0 || key.indexOf(name) === 0)) sc = 60;
+    r.slice(2).forEach(function (a) {
+      if (idLetters === a) sc = Math.max(sc, 90);
+      else if (a.length >= 3 && idLetters.indexOf(a) === 0) sc = Math.max(sc, 50);
+      if (name === a) sc = Math.max(sc, 90);
+    });
+    if (sc > score) { score = sc; best = r; }
+  });
+  return best;
+}
+var sheetUrl = function (r) { return S + r[1] + '/edit'; };
+
+// ---------------------------------------------------------------------
+var chips = document.getElementById('chips');
+SHEETS.forEach(function (r) {
+  var a = document.createElement('a');
+  a.className = 'chip'; a.href = sheetUrl(r); a.textContent = r[0];
+  chips.appendChild(a);
+});
+var mats = document.getElementById('mats');
+MATS.forEach(function (g) {
+  var box = document.createElement('div'); box.className = 'mg';
+  var h = document.createElement('h3');
+  var dot = document.createElement('span'); dot.style.background = g[1];
+  h.appendChild(dot); h.appendChild(document.createTextNode(g[0]));
+  box.appendChild(h);
+  g[2].forEach(function (m) {
+    var a = document.createElement('a'); a.className = 'ml'; a.href = m[2];
+    a.appendChild(document.createTextNode(m[0]));
+    if (m[1]) { var s = document.createElement('small'); s.textContent = m[1]; a.appendChild(s); }
+    box.appendChild(a);
+  });
+  mats.appendChild(box);
+});
+var others = document.getElementById('others');
+OTHERS.forEach(function (o) {
+  var a = document.createElement('a');
+  a.className = 'o'; a.href = o[3];
+  var b = document.createElement('span');
+  b.className = 'b'; b.style.background = o[2]; b.textContent = o[1];
+  var t = document.createElement('span'); t.textContent = o[0];
+  a.appendChild(b); a.appendChild(t); others.appendChild(a);
+});
+
+// ---------------------------------------------------------------------
+// ログインに合わせて、記録表のボタンと上のバーを変える
+var recBtn = document.getElementById('recBtn');
+var records = document.getElementById('records');
+var mine = null;
+function render(user) {
+  mine = user && user.role === 'student' ? findSheet(user) : null;
+  var who = document.getElementById('who');
+  var auth = window.BlockAuth && window.BlockAuth.enabled;
+  who.hidden = !user;
+  who.textContent = user ? user.name + ' さん' : '';
+  document.getElementById('logoutBtn').hidden = !user;
+  document.getElementById('loginBtn').hidden = !!user || !auth;
+  if (mine) {
+    recBtn.href = sheetUrl(mine);
+    document.getElementById('recTitle').textContent = mine[0] + 'の記録表';
+    document.getElementById('recSub').textContent = 'ひらく';
+    records.hidden = true;
+  } else {
+    recBtn.href = '#records';
+    document.getElementById('recTitle').textContent = 'スコア記録表';
+    document.getElementById('recSub').textContent = 'したの名前をえらぶ';
+    records.hidden = false;
+  }
+}
+recBtn.addEventListener('click', function (e) {
+  if (mine) return;
+  e.preventDefault();
+  records.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  records.classList.add('flash');
+  setTimeout(function () { records.classList.remove('flash'); }, 1200);
+});
+window.addEventListener('blockai-auth', function (e) { render(e.detail && e.detail.user); });
+document.getElementById('logoutBtn').addEventListener('click', function () { window.BlockAuth.logout(); });
+document.getElementById('loginBtn').addEventListener('click', function () { window.BlockAuth.require(' '); });
+// ログイン画面の下のボタンは「ログインしないで使う」にする
+window.BlockAuthOptions = {
+  backLabel: 'ログインしないで使う',
+  onBack: function () { render(null); document.getElementById('q').focus(); }
+};
+render(null);
+</script>
+<script src="/app/login.js"></script>
+<script>
+window.BlockAuth.ready.then(function () {
+  var u = window.BlockAuth.user();
+  render(u);
+  if (!window.BlockAuth.enabled) document.getElementById('q').focus();
+});
+</script>
+</body>
+</html>
