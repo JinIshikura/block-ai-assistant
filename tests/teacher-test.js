@@ -12,6 +12,10 @@ const res = (o, s) => ({ status: s || 200, json: async () => o });
 w.fetch = async (url, opt) => {
   const b = opt && opt.body ? JSON.parse(opt.body) : {};
   sent.push(b);
+  if (url === '/api/monitor' && b.action === 'getConfig') return res({ ok: true, config: { day: 0, start: '10:00', end: '12:00', awaySec: 60, enabled: true }, active: false, shots: true });
+  if (url === '/api/monitor' && b.action === 'days') return res({ ok: true, days: ['2026-11-29'] });
+  if (url === '/api/monitor' && b.action === 'list') return res({ ok: true, shots: [{ key: 'k01/2026-11-29/100100', time: '10:01:00', title: 'YouTube', url: 'https://www.youtube.com/' }], away: [{ start: 1, end: 91001, sec: 91, pages: [{ title: 'YouTube', url: 'https://www.youtube.com/' }] }] });
+  if (url === '/api/monitor' && b.action === 'img') return { ok: true, status: 200, blob: async () => new w.Blob(['x']) };
   if (url === '/api/health') return res({ ok: true, auth: true });
   if (url.startsWith('/learn/course.json')) return res(course);
   if (b.action === 'login') return res({ ok: true, token: 't'.repeat(64), user: { id: 'sensei', role: 'teacher', name: '先生' } });
@@ -21,6 +25,7 @@ w.fetch = async (url, opt) => {
   return res({ ok: true });
 };
 w.print = () => { w.__printed = true; };
+w.URL.createObjectURL = () => 'blob:x';
 w.eval(html.match(/<script>([\s\S]*)<\/script>/)[1]);
 (async () => {
   await wait(30);
@@ -41,5 +46,9 @@ w.eval(html.match(/<script>([\s\S]*)<\/script>/)[1]);
   ok(sent.some((b) => b.action === 'create' && b.students[0].id === 'k02') && w.document.querySelectorAll('.list tr').length === 3, '生徒を追加できる');
   $('.print').click();
   ok(w.__printed && w.document.querySelectorAll('.slip').length === 2, '配布用カード（変更済みの生徒はのぞく）');
+  await wait(30);
+  ok($('.monf').elements.start.value === '10:00' && $('.monf').elements.day.value === '0', '見守りの設定（日曜 10:00〜）を表示');
+  $('.mload').click(); await wait(80);
+  ok(/YouTube/.test($('.mview').textContent) && $('.mview').querySelectorAll('figure').length === 1 && /1分31秒/.test($('.mview').textContent), '生徒の見守りの記録（離れた時間・スクショ）を表示');
   process.exit();
 })();

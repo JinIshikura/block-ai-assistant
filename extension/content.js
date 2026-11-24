@@ -177,6 +177,8 @@
         closeApp();
       } else if (d.kind === 'peek') {
         peek();
+      } else if (d.kind === 'auth') {
+        try { chrome.runtime.sendMessage({ type: 'auth', token: typeof d.token === 'string' ? d.token : '' }); } catch (e) { /* 古い拡張機能 */ }
       } else if (d.kind === 'closeTab') {
         closeApp();
         if (LEARN_TAB) { try { window.close(); } catch (e) { /* noop */ } }
@@ -216,4 +218,25 @@
       if (ready) { clearInterval(waitReady); setTimeout(() => openApp('learn'), 800); }
     }, 500);
   }
+
+  // ---------------------------------------------------------------
+  // 見守りの表示（教室の時間は、記録していることを画面に出す）
+  // ---------------------------------------------------------------
+  let recPill = null;
+  function recStatus() {
+    try {
+      chrome.runtime.sendMessage({ type: 'status' }, (r) => {
+        if (chrome.runtime.lastError) return;
+        const on = !!(r && r.active);
+        if (on && !recPill) {
+          recPill = document.createElement('div');
+          recPill.textContent = '● 教室の時間：学習のようすを記録しています';
+          recPill.style.cssText = 'position:fixed;left:10px;bottom:10px;z-index:2147483647;background:#fff;color:#B42318;border:1.5px solid #E5484D;border-radius:999px;padding:4px 12px;font:12px/1.6 system-ui,sans-serif;pointer-events:none;opacity:.92';
+          document.documentElement.appendChild(recPill);
+        } else if (!on && recPill) { recPill.remove(); recPill = null; }
+      });
+    } catch (e) { /* noop */ }
+  }
+  recStatus();
+  setInterval(recStatus, 60000);
 })();

@@ -110,6 +110,26 @@
     <div class="note" style="margin-bottom:8px">数字は「クリアした演習 / 演習の数」。数字にマウスをのせると、演習ごとのようすと判定した回数が出ます。最後に学習した日時も見られます。</div>
     <div style="overflow-x:auto"><table class="prog"></table></div>
   </section>
+  <section class="card admin hidden mon">
+    <h2>見守り（教室の時間だけ記録）</h2>
+    <div class="note" style="margin-bottom:8px">拡張機能 0.13 以上を入れたPCで、生徒がログインしているときだけ記録します。記録中は、生徒の画面に「記録しています」と表示されます。記録は30日で自動的に消えます。</div>
+    <form class="monf row" style="align-items:flex-end">
+      <label style="flex:0 1 110px">曜日<select name="day" style="font:inherit;border:1.5px solid #C5CCD6;border-radius:8px;min-height:40px;padding:0 8px"><option value="0">日曜</option><option value="1">月曜</option><option value="2">火曜</option><option value="3">水曜</option><option value="4">木曜</option><option value="5">金曜</option><option value="6">土曜</option></select></label>
+      <label style="flex:0 1 120px">始まり<input name="start" type="time"></label>
+      <label style="flex:0 1 120px">終わり<input name="end" type="time"></label>
+      <label style="flex:0 1 190px">離れたと記録するまで（秒）<input name="awaySec" type="number" min="10" max="1800" step="10"></label>
+      <label style="flex:0 1 auto;flex-direction:row;align-items:center;gap:6px;min-height:40px"><input name="enabled" type="checkbox" style="min-height:0;width:18px;height:18px"> 記録する</label>
+      <button class="pri" type="submit">保存</button>
+    </form>
+    <div class="msg hidden mmsg" style="margin-top:8px"></div>
+    <div class="row" style="margin-top:14px">
+      <label style="flex:0 1 220px">生徒<select class="mstu" style="font:inherit;border:1.5px solid #C5CCD6;border-radius:8px;min-height:40px;padding:0 8px"></select></label>
+      <label style="flex:0 1 180px">日付<select class="mday" style="font:inherit;border:1.5px solid #C5CCD6;border-radius:8px;min-height:40px;padding:0 8px"></select></label>
+      <button class="mload" type="button">表示</button>
+    </div>
+    <div class="mview" style="margin-top:12px"></div>
+  </section>
+  <div class="zoomv hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out"><img style="max-width:100%;max-height:100%;border-radius:8px;background:#fff"></div>
   <section class="slips"></section>
 </main>
 <script src="/portal/sheets.js"></script>
@@ -121,8 +141,8 @@
   let token = sessionStorage.getItem(KEY) || '';
   let students = [];
 
-  async function api(body) {
-    const r = await fetch('/api/auth', { method: 'POST', headers: Object.assign({ 'content-type': 'application/json' }, token ? { authorization: 'Bearer ' + token } : {}), body: JSON.stringify(body) });
+  async function api(body, path) {
+    const r = await fetch(path || '/api/auth', { method: 'POST', headers: Object.assign({ 'content-type': 'application/json' }, token ? { authorization: 'Bearer ' + token } : {}), body: JSON.stringify(body) });
     let d = {};
     try { d = await r.json(); } catch (e) { d = { ok: false, error: 'サーバーの返事が読めませんでした' }; }
     d.status = r.status;
@@ -146,6 +166,7 @@
     $('.who').textContent = (user && user.id ? user.id : '') + ' でログイン中';
     load();
     loadProgress();
+    loadMonitor();
   }
 
   $('.loginf').addEventListener('submit', async (e) => {
@@ -239,6 +260,56 @@
     if (d.ok) $('.bulk').value = '';
   });
   $('.reload').addEventListener('click', load);
+  // ---- 見守り ----
+  const mmsg = $('.mmsg'); mmsg.dataset.k = 'mmsg';
+  async function loadMonitor() {
+    const d = await api({ action: 'getConfig' }, '/api/monitor');
+    if (!d.ok || !d.config) { msg(mmsg, 'ng', (d && d.error) || '見守りの設定を読みこめませんでした'); return; }
+    const f = $('.monf');
+    f.elements.day.value = String(d.config.day); f.elements.start.value = d.config.start; f.elements.end.value = d.config.end;
+    f.elements.awaySec.value = d.config.awaySec; f.elements.enabled.checked = d.config.enabled !== false;
+    msg(mmsg, d.active ? 'ok' : 'ok', (d.active ? 'いまは記録する時間です。' : 'いまは記録する時間ではありません。') + (d.shots ? '' : '（記録の保存先 D1 がまだ設定されていないので、記録は保存されません）'));
+    const sel = $('.mstu');
+    sel.innerHTML = students.map((x) => '<option value="' + x.id + '">' + x.name.replace(/[<>&]/g, '') + '（' + x.id + '）</option>').join('');
+    loadDays();
+  }
+  $('.monf').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    const d = await api({ action: 'setConfig', day: Number(f.elements.day.value), start: f.elements.start.value, end: f.elements.end.value, awaySec: Number(f.elements.awaySec.value), enabled: f.elements.enabled.checked }, '/api/monitor');
+    msg(mmsg, d.ok ? 'ok' : 'ng', d.ok ? '保存しました。' + (d.active ? 'いまは記録する時間です。' : '') : (d.error || '保存できませんでした'));
+  });
+  async function loadDays() {
+    const id = $('.mstu').value;
+    if (!id) return;
+    const d = await api({ action: 'days', id }, '/api/monitor');
+    $('.mday').innerHTML = d.ok && d.days.length ? d.days.map((x) => '<option>' + x + '</option>').join('') : '<option value="">記録なし</option>';
+  }
+  $('.mstu').addEventListener('change', loadDays);
+  const fmt = (ms) => new Date(ms).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const esc2 = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  $('.mload').addEventListener('click', async () => {
+    const id = $('.mstu').value; const date = $('.mday').value;
+    const v = $('.mview');
+    if (!id || !date) { v.innerHTML = '<div class="note">この生徒の記録はまだありません。</div>'; return; }
+    v.innerHTML = '<div class="note">読みこみ中…</div>';
+    const d = await api({ action: 'list', id, date }, '/api/monitor');
+    if (!d.ok) { v.innerHTML = '<div class="msg ng">' + esc2(d.error || '読みこめませんでした') + '</div>'; return; }
+    let h = '<h3 style="margin:6px 0">Scratch から離れていた時間（' + d.away.length + '回）</h3>';
+    h += d.away.length ? '<table><thead><tr><th>時刻</th><th>長さ</th><th>見ていたページ</th></tr></thead><tbody>' + d.away.map((a) => '<tr><td style="white-space:nowrap">' + fmt(a.start) + '〜' + fmt(a.end) + '</td><td style="white-space:nowrap">' + Math.floor(a.sec / 60) + '分' + (a.sec % 60) + '秒' + (a.open ? '（続いている）' : '') + '</td><td>' + a.pages.map((p) => esc2(p.title || p.url || '（不明）') + (p.url ? ' <span class="note">' + esc2(p.url.replace(/^https?:\/\//, '').slice(0, 60)) + '</span>' : '')).join('<br>') + '</td></tr>').join('') + '</tbody></table>' : '<div class="note">ありません。</div>';
+    h += '<h3 style="margin:14px 0 6px">スクショ（' + d.shots.length + '枚・1分おき）</h3><div class="shots" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px"></div>';
+    v.innerHTML = h;
+    const box = v.querySelector('.shots');
+    for (const sh of d.shots) {
+      const c = document.createElement('figure');
+      c.style.cssText = 'margin:0;border:1px solid #DDE1E8;border-radius:8px;overflow:hidden;background:#fff;cursor:zoom-in';
+      c.innerHTML = '<div style="aspect-ratio:16/10;background:#EEF0F3"><img style="width:100%;height:100%;object-fit:cover;display:block" alt=""></div><figcaption style="font-size:12px;padding:4px 8px"><b>' + sh.time + '</b> ' + esc2(sh.title || '') + '</figcaption>';
+      box.appendChild(c);
+      const r = await fetch('/api/monitor', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + token }, body: JSON.stringify({ action: 'img', key: sh.key }) });
+      if (r.ok) { const u = URL.createObjectURL(await r.blob()); c.querySelector('img').src = u; c.addEventListener('click', () => { const z = $('.zoomv'); z.querySelector('img').src = u; z.classList.remove('hidden'); }); }
+    }
+  });
+  $('.zoomv').addEventListener('click', () => $('.zoomv').classList.add('hidden'));
   // 学習の進み具合
   let course = null;
   async function loadProgress() {

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "ブロックAIアシスタント",
-  "version": "0.12.0",
-  "description": "Scratchのエディタに、子ども向けのAIアシスタントを追加します（画面と機能はサーバーから読みこみます）。",
+  "version": "0.13.0",
+  "description": "Scratchのエディタに、子ども向けのAIアシスタントを追加します（画面と機能はサーバーから読みこみます）。教室の時間（先生が設定）は、学習のようすを記録します。",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -10,15 +10,41 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://scratch.mit.edu/projects/*"],
-      "js": ["page-bridge.js"],
+      "matches": [
+        "https://scratch.mit.edu/projects/*"
+      ],
+      "js": [
+        "page-bridge.js"
+      ],
       "world": "MAIN",
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://scratch.mit.edu/projects/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://scratch.mit.edu/projects/*"
+      ],
+      "js": [
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "tabs",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_title": "ブロックAIアシスタント",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    }
+  }
 }

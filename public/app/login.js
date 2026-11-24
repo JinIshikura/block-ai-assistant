@@ -49,6 +49,7 @@
       <label class="show"><input type="checkbox" class="showpw"> パスワードを表示する</label>
       <div class="err"></div>
       <button class="go" type="submit">ログイン</button>
+      <p style="font-size:12px;margin:0">教室の時間は、学習のようすを知るために、Chromeの画面と、Scratchからはなれた時間を記録します。</p>
       <button class="sub back" type="button"></button>
     </form>
     <form class="box f-change" hidden>
@@ -68,7 +69,11 @@
   ['keydown', 'keyup', 'keypress'].forEach((t) => el.addEventListener(t, (e) => e.stopPropagation()));
 
   function save() { try { if (token) localStorage.setItem(KEY, token); else localStorage.removeItem(KEY); } catch (e) { /* noop */ } }
-  function notify() { try { window.dispatchEvent(new CustomEvent('blockai-auth', { detail: { user } })); } catch (e) { /* noop */ } }
+  function notify() {
+    try { window.dispatchEvent(new CustomEvent('blockai-auth', { detail: { user } })); } catch (e) { /* noop */ }
+    // 拡張機能（見守り）に、ログインした生徒の合言葉を渡す（先生・ログアウトのときは空）
+    try { HOST.post({ kind: 'auth', token: user && user.role === 'student' ? token : '' }); } catch (e) { /* noop */ }
+  }
   async function api(body, cookieOnly) {
     const useToken = token && !cookieOnly;
     const r = await fetch('/api/auth', { method: 'POST', credentials: 'same-origin', headers: Object.assign({ 'content-type': 'application/json' }, useToken ? { authorization: 'Bearer ' + token } : {}), body: JSON.stringify(body) });

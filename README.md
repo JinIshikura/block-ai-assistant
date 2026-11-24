@@ -57,3 +57,11 @@ Scratchのエディタに、子ども向けのAIアシスタントを追加す�
 
 - `docs/apps-script.gs`：会話の記録を受けとる Google Apps Script
 - 設定・会話は各PCのブラウザ（サーバーの画面の保存領域）に保存される
+
+## 見守り（拡張機能 0.13 以上）
+- 先生が決めた教室の時間（初期値：日曜 10:00〜12:00、管理画面の「見守り」で変更）だけ、ログインした生徒のPCで記録する
+- 1分おきに、Chromeでいま見えているタブのスクショ（横960px）を保存。Scratch から一定時間（初期値60秒）離れていたら、その時間と見ていたページを記録
+- 記録中は、ツールバーのアイコンに「REC」、Scratch の画面左下に「記録しています」を表示。ログイン画面にも説明を表示
+- 保存先：Cloudflare D1（バインド名 MON。表は自動で作る）。設定は KV（cfg:monitor）。30日より古い記録は自動で消す
+- 拡張機能の許可：tabs・storage・alarms・すべてのサイト（スクショのため）
+- テスト：tests/monitor-test.mjs（`node --experimental-sqlite`）、tests/bg-test.js
