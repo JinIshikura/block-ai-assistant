@@ -95,6 +95,8 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
     A.user = u0; q('.go-home').click(); await wait(50);
     ok(!qa('.home .lesson')[1].classList.contains('locked'), '先生・ログインなしでは全部開いている');
   }
+  // 効果音のオン・オフ
+  { const sb = q('.sound'); const was = sb.textContent; sb.click(); ok(sb.textContent !== was && /🔇|🔊/.test(sb.textContent), '効果音のボタンでオン・オフが切りかわる'); sb.click(); }
   // やめる
   q('.quit').click(); q('.confirm .yes').click(); await wait(30);
   ok(sent.some((m) => m.kind === 'closeTab'), '「学習をやめる」でタブを閉じる合図');

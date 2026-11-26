@@ -239,6 +239,7 @@
       <div style="display:flex;gap:8px">
         <span class="who" style="align-self:center;font-size:13px;opacity:.9"></span>
         <button class="hb ghost logout hidden" type="button">ログアウト</button>
+        <button class="hb ghost sound" type="button" title="効果音のオン・オフ">🔊 音</button>
         <button class="hb ghost go-ref" type="button">対応表</button>
         <button class="hb ghost go-home" type="button">一覧</button>
         <button class="hb quit" type="button">学習をやめる</button>
@@ -364,6 +365,40 @@
     if (nx && lessonDone(lesson) && !isLocked(nx)) openSlides(nx, 0); else renderHome();
   }
   const lastLabel = () => { const nx = nextLesson(lesson); return nx && lessonDone(lesson) ? '次のレッスンへ' : '一覧にもどる'; };
+  // 効果音（音のファイルは使わず、ブラウザでその場で作る）。オン・オフはこの端末に残す
+  const sfx = (() => {
+    let ctx = null;
+    let on = true;
+    try { on = localStorage.getItem('bai.sound') !== 'off'; } catch (e) { /* noop */ }
+    function tone(freq, start, dur, type, vol) {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type || 'sine';
+      o.frequency.value = freq;
+      const t = ctx.currentTime + start;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(ctx.destination);
+      o.start(t); o.stop(t + dur + 0.05);
+    }
+    const SONGS = {
+      ok: [[880, 0, 0.12], [1318.5, 0.09, 0.22]],                                   // ピンポン
+      ng: [[311, 0, 0.18, 'triangle', 0.09], [262, 0.14, 0.26, 'triangle', 0.09]],  // ぶぶー（やさしめ）
+      clear: [[523.3, 0, 0.12], [659.3, 0.1, 0.12], [784, 0.2, 0.12], [1046.5, 0.3, 0.32]],
+      lesson: [[523.3, 0, 0.13], [659.3, 0.12, 0.13], [784, 0.24, 0.13], [1046.5, 0.36, 0.2], [784, 0.56, 0.12], [1046.5, 0.68, 0.45]]
+    };
+    function play(name) {
+      if (!on) return;
+      try {
+        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === 'suspended') ctx.resume();
+        (SONGS[name] || []).forEach((n) => tone(n[0], n[1], n[2], n[3] || 'sine', n[4]));
+      } catch (e) { /* 音が出せない環境では何もしない */ }
+    }
+    return { play, get on() { return on; }, set on(v) { on = !!v; try { localStorage.setItem('bai.sound', on ? 'on' : 'off'); } catch (e) { /* noop */ } } };
+  })();
+
   // 書きかけのコードを、この端末に残す（生徒ごと・課題ごと）。タブを閉じても続きから書ける
   const draftKey = (id) => { const u = window.BlockAuth && window.BlockAuth.user(); return 'bai.draft.' + ((u && u.id) || 'guest') + '.' + id; };
   const loadDraft = (id) => { try { return localStorage.getItem(draftKey(id)); } catch (e) { return null; } };
@@ -701,6 +736,7 @@
         tried++;
         if (k === ex.answer) {
           b.classList.add('ok');
+          sfx.play(lesson.exercises.every((e) => e.id === ex.id || cleared.has(e.id)) ? 'lesson' : 'ok');
           fb.className = 'qfb ok';
           fb.textContent = '正解！　' + (ex.explain || '');
           $('.qnext').classList.remove('hidden');
@@ -709,6 +745,7 @@
           if (isStudent()) authApi({ action: 'record', ex: ex.id, ok: true });
         } else {
           b.classList.add('ng');
+          sfx.play('ng');
           fb.className = 'qfb ng';
           fb.textContent = (c.why || 'ちがうよ。') + '　もう一度えらんでね。' + (tried >= 2 && ex.hint ? '\nヒント：' + ex.hint : '');
           if (isStudent()) authApi({ action: 'record', ex: ex.id, ok: false });
@@ -1066,9 +1103,11 @@
     }
     if (all) {
       cleared.add(ex.id);
+      sfx.play(lessonDone(lesson) ? 'lesson' : 'clear');
       showClear();
     } else {
       fails++;
+      sfx.play('ng');
       updateAi();
       const target = fails === AI_AFTER_FAILS ? el.aiOpen : el.results;
       try { target.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) { /* noop */ }
@@ -1198,6 +1237,10 @@
     else el.home.classList.remove('hidden');
   }
   $('.go-ref').addEventListener('click', () => { if ($('.refv').classList.contains('hidden')) openRef(); else closeRef(); });
+  const soundBtn = $('.sound');
+  const paintSound = () => { soundBtn.textContent = sfx.on ? '🔊 音' : '🔇 音'; soundBtn.setAttribute('aria-pressed', String(sfx.on)); };
+  paintSound();
+  soundBtn.addEventListener('click', () => { sfx.on = !sfx.on; paintSound(); if (sfx.on) sfx.play('ok'); });
   $('.go-home').addEventListener('click', () => { if (!busy) renderHome(); });
   $('.quit').addEventListener('click', () => el.confirm.classList.remove('hidden'));
   $('.confirm .no').addEventListener('click', () => el.confirm.classList.add('hidden'));
