@@ -12,7 +12,7 @@
     looks: { c: '#9966FF', d: '#774DCB', n: '見た目' }, sound: { c: '#CF63CF', d: '#BD42BD', n: '音' },
     control: { c: '#FFAB19', d: '#CF8B17', n: '制御' }, sensing: { c: '#5CB1D6', d: '#2E8EB8', n: '調べる' },
     operator: { c: '#59C059', d: '#389438', n: '演算' }, variable: { c: '#FF8C1A', d: '#DB6E00', n: '変数' },
-    list: { c: '#FF661A', d: '#E64D00', n: 'リスト' }, note: { c: '#8A93A3', d: '#6B7280', n: '' }
+    list: { c: '#FF661A', d: '#E64D00', n: 'リスト' }, myblock: { c: '#FF6680', d: '#FF3355', n: 'ブロック定義' }, note: { c: '#8A93A3', d: '#6B7280', n: '' }
   };
 
   // ---- 式（かっこの中）を日本語のブロックに ----
@@ -180,6 +180,10 @@
       return { indent: ind, kind: 'hat', cat: 'event', html: h ? h(mm[2] || mm[3]) : esc(s) };
     }
     if (/^def\s+script\d*\s*\(\s*\)\s*:$/.test(s)) return { indent: ind, kind: 'def', html: '<span class="bv-note">（はじまりの決まり文句：上の行とセット）</span>' };
+    if ((mm = /^def\s+([\p{L}_][\p{L}\p{N}_]*)\s*\(([^)]*)\)\s*:$/u.exec(s))) {
+      const ps = mm[2].split(',').map((x) => x.trim()).filter(Boolean);
+      return { indent: ind, kind: 'hat', cat: 'myblock', html: '定義 ' + esc(mm[1]) + ps.map((x) => ' ' + rep(esc(x), 'myblock')).join('') };
+    }
     if ((mm = /^def\s+/.exec(s))) return { indent: ind, kind: 'note', html: '<span class="bv-note">（自分で作るブロック）</span>' };
     if (s === 'while True:') return { indent: ind, kind: 'c', cat: 'control', html: 'ずっと' };
     if ((mm = /^while\s+(.+):$/.exec(s))) return { indent: ind, kind: 'c', cat: 'control', html: ex(parseExpr(mm[1]), true) + ' のあいだ繰り返す' };
@@ -213,10 +217,21 @@
       const r = STMT[mm[1]](e && e.args ? e.args : []);
       return { indent: ind, kind: 'stmt', cat: r.cat, html: r.html };
     }
+    if ((mm = /^([\p{L}_][\p{L}\p{N}_]*)\((.*)\)$/u.exec(s)) && DEFINED.has(mm[1])) {
+      const e = parseExpr(s);
+      const a = e && e.args ? e.args : [];
+      return { indent: ind, kind: 'stmt', cat: 'myblock', html: esc(mm[1]) + a.map((x) => ' ' + ex(x)).join('') };
+    }
     return { indent: ind, kind: 'unknown', html: '<span class="bv-note">（このツールでは使えない書き方かも）</span>' };
   }
+  // そのコードの中で def した名前（自分で作った命令）
+  let DEFINED = new Set();
+  function scanDefs(code) {
+    DEFINED = new Set();
+    String(code || '').split('\n').forEach((l) => { const m = /^def\s+([\p{L}_][\p{L}\p{N}_]*)\s*\(/u.exec(l); if (m && !/^script\d*$/.test(m[1])) DEFINED.add(m[1]); });
+  }
 
-  function rows(code) { return String(code || '').replace(/\s+$/, '').split('\n').map(lineRow); }
+  function rows(code) { scanDefs(code); return String(code || '').replace(/\s+$/, '').split('\n').map(lineRow); }
 
   function blockHtml(r) {
     if (r.kind === 'blank') return '';
@@ -231,6 +246,7 @@
   // ブロックとコードを横に並べた表
   function table(code, opts) {
     const o = opts || {};
+    scanDefs(code);
     const lines = String(code || '').replace(/\s+$/, '').split('\n');
     const rs = lines.map(lineRow);
     const hl = o.highlight || ((t) => esc(t));

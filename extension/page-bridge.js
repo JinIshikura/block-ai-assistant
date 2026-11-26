@@ -1770,7 +1770,7 @@
       mutation: {
         tagName: 'mutation', children: [], proccode,
         argumentids: JSON.stringify(ids), argumentnames: JSON.stringify(params),
-        argumentdefaults: JSON.stringify(params.map(() => '')), warp: 'true'
+        argumentdefaults: JSON.stringify(params.map(() => '')), warp: p.warp === false ? 'false' : 'true'
       }
     };
     const argBlocks = params.map((pn, i) => {

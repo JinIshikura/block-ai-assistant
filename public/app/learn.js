@@ -70,6 +70,13 @@
   .pill.test { border-color: #E0A43A; }
   .pill.slides { border-color: #7C4FD0; color: #4B23A3; font-weight: 700; }
   .pill.done { border-color: #2E7D46; color: #1F5A32; }
+  .lesson.dojo { background: #FFF8E6; border: 1.5px solid #E9C46A; }
+  .lesson .badge { display: inline-block; margin-right: 8px; font-size: 13px; font-weight: 700; border-radius: 6px; padding: 2px 8px; background: #F6D78B; color: #5C3D00; vertical-align: 2px; }
+  .lesson.locked { background: #F1F3F6; }
+  .lesson.locked .lt { color: #4B5563; }
+  .lesson .lockmsg { font-size: 14px; color: #4B5563; }
+  .pill:disabled { cursor: not-allowed; background: #F1F3F6; color: #6B7280; border-color: #D5DAE1; }
+  .pill:disabled:hover { background: #F1F3F6; border-color: #D5DAE1; }
   /* スライド */
   .slides { flex: 1; overflow: auto; display: flex; justify-content: center; padding: 20px; }
   .slide { width: 100%; max-width: 980px; max-height: 100%; padding: 22px 30px 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
@@ -338,6 +345,21 @@
     const d = await authApi({ action: 'myProgress' });
     if (d && d.ok && d.progress) Object.keys(d.progress.cleared || {}).forEach((k) => cleared.add(k));
   }
+  // 順番に解放：生徒は、前のレッスンの演習をぜんぶクリアすると次が開く（先生・ログインなしは全部開く）
+  const allLessons = () => course.steps.reduce((a, st) => a.concat(st.lessons), []);
+  const lessonDone = (ls) => ls.exercises.every((e) => cleared.has(e.id));
+  function isLocked(ls) {
+    if (!isStudent()) return false;
+    const all = allLessons();
+    const k = all.indexOf(ls);
+    return k > 0 && !lessonDone(all[k - 1]);
+  }
+  function nextLesson(ls) { const all = allLessons(); const k = all.indexOf(ls); return k >= 0 && k + 1 < all.length ? all[k + 1] : null; }
+  function afterLast() {
+    const nx = nextLesson(lesson);
+    if (nx && lessonDone(lesson) && !isLocked(nx)) openSlides(nx, 0); else renderHome();
+  }
+  const lastLabel = () => { const nx = nextLesson(lesson); return nx && lessonDone(lesson) ? '次のレッスンへ' : '一覧にもどる'; };
   function record(ok) { if (isStudent() && ex) authApi({ action: 'record', ex: ex.id, ok: !!ok }); }
   const projectCache = {};
 
@@ -380,9 +402,12 @@
       el.home.appendChild(h);
       st.lessons.forEach((ls) => {
         const c = document.createElement('div');
-        c.className = 'lesson card';
+        const locked = isLocked(ls);
+        c.className = 'lesson card' + (ls.dojo ? ' dojo' : '') + (locked ? ' locked' : '');
         c.innerHTML = '<div class="lt"></div><div class="row"></div>';
-        c.querySelector('.lt').textContent = ls.title;
+        c.querySelector('.lt').textContent = (locked ? '🔒 ' : '') + ls.title;
+        if (ls.dojo) c.querySelector('.lt').insertAdjacentHTML('afterbegin', '<span class="badge">道場</span>');
+        if (locked) c.querySelector('.row').insertAdjacentHTML('beforebegin', '<div class="lockmsg">前のレッスンの演習をぜんぶクリアすると開きます。</div>');
         const nDone = ls.exercises.filter((e) => cleared.has(e.id)).length;
         if (nDone) {
           const tag = document.createElement('span');
@@ -393,12 +418,14 @@
         const row = c.querySelector('.row');
         const sb = document.createElement('button');
         sb.type = 'button'; sb.className = 'pill slides'; sb.textContent = 'スライド（' + ls.slides.length + '枚）';
+        sb.disabled = locked;
         sb.addEventListener('click', () => openSlides(ls, 0));
         row.appendChild(sb);
         ls.exercises.forEach((e, i) => {
           const b = document.createElement('button');
           b.type = 'button';
-          b.className = 'pill' + (cleared.has(e.id) ? ' done' : '') + (ls.exercises.length && /テスト/.test(ls.title) ? ' test' : '');
+          b.className = 'pill' + (cleared.has(e.id) ? ' done' : '') + (ls.dojo ? ' test' : '');
+          b.disabled = locked;
           const no = document.createElement('span');
           no.className = 'no';
           no.textContent = (cleared.has(e.id) ? '✓ ' : '') + (e.type === 'quiz' ? 'えらぶ' : '演習' + (i + 1));
@@ -486,15 +513,24 @@
     return projectCache[name].slice(0);
   }
 
+  const parseCode = (code) => (BC.parseWithDefs ? BC.parseWithDefs(code, 'py', {}) : BC.parse(code, 'py', {}));
   async function applyCode(sprite, code) {
-    const r = BC.parse(code, 'py', {});
+    const r = parseCode(code);
     if (r.error) {
       const e = new Error((r.error.line ? r.error.line + '行目：' : '') + r.error.msg);
       e.line = r.error.line;
       throw e;
     }
     const cur = await bridge('getScripts', { sprite });
-    await bridge('replaceScripts', { sprite, removeTopIds: (cur.scripts || []).map((s) => s.topId), scripts: r.scripts }, 30000);
+    const old = (cur.scripts || []).map((s) => s.topId);
+    if (r.functions && r.functions.length) {
+      // 自分で作った命令（定義ブロック）を先に作ってから、呼び出すスクリプトを置く
+      await bridge('replaceScripts', { sprite, removeTopIds: old, scripts: [] }, 30000);
+      for (const f of r.functions) await bridge('defineFunction', { sprite, name: f.name, params: f.params, body: f.body, warp: false }, 15000);
+      await bridge('replaceScripts', { sprite, removeTopIds: [], scripts: r.scripts }, 30000);
+    } else {
+      await bridge('replaceScripts', { sprite, removeTopIds: old, scripts: r.scripts }, 30000);
+    }
     return r;
   }
 
@@ -597,8 +633,8 @@
           fb.className = 'qfb ok';
           fb.textContent = '正解！　' + (ex.explain || '');
           $('.qnext').classList.remove('hidden');
-          $('.qnext').textContent = exIdx + 1 < lesson.exercises.length ? '次の演習へ' : '一覧にもどる';
           if (!cleared.has(ex.id)) cleared.add(ex.id);
+          $('.qnext').textContent = exIdx + 1 < lesson.exercises.length ? '次の演習へ' : lastLabel();
           if (isStudent()) authApi({ action: 'record', ex: ex.id, ok: true });
         } else {
           b.classList.add('ng');
@@ -610,7 +646,7 @@
       chs.appendChild(b);
     });
   }
-  $('.qnext').addEventListener('click', () => { if (exIdx + 1 < lesson.exercises.length) openExercise(lesson, exIdx + 1); else renderHome(); });
+  $('.qnext').addEventListener('click', () => { if (exIdx + 1 < lesson.exercises.length) openExercise(lesson, exIdx + 1); else afterLast(); });
   $('.qslides').addEventListener('click', () => openSlides(lesson, 0));
 
   async function prepare() {
@@ -717,7 +753,7 @@
   el.ta.addEventListener('input', () => { errLine = 0; paint(); });
   el.ta.addEventListener('scroll', syncScroll);
   // 入力サポート（入力候補・かっこ・字下げ・全角の直し・案内バー）
-  const assist = window.EditorAssist ? window.EditorAssist.attach({ ta: el.ta, wrap: el.ta.parentNode, barAfter: $('.editor'), lang: () => 'py' }) : null;
+  const assist = window.EditorAssist ? window.EditorAssist.attach({ ta: el.ta, wrap: el.ta.parentNode, barAfter: $('.editor'), lang: () => 'py', defs: true }) : null;
 
   // ヒント
   el.hintBtn.addEventListener('click', () => {
@@ -753,8 +789,8 @@
   // ---------------------------------------------------------------
   // 判定
   // ---------------------------------------------------------------
-  function canonicalLines(scripts) {
-    let out = BC.toCode(scripts.map((s, k) => ({ topId: 't' + k, x: 0, y: k * 100, blocks: s.blocks || s })), 'py', {});
+  function canonicalLines(scripts, fnMap) {
+    let out = BC.toCode(scripts.map((s, k) => ({ topId: 't' + k, x: 0, y: k * 100, blocks: s.blocks || s })), 'py', { functions: fnMap || {} });
     if (out && typeof out === 'object') out = out.text || '';
     return String(out || '').split('\n').filter((l) => l.trim() && !/^\s*#/.test(l)).map((l) => {
       const ind = (/^ */.exec(l) || [''])[0].length;
@@ -907,8 +943,8 @@
       return finish(false);
     }
     try {
-      linesBySprite[ex.sprite] = canonicalLines(parsed.scripts);
-      Object.keys(ex.starter).forEach((sp) => { if (sp !== ex.sprite) linesBySprite[sp] = canonicalLines(BC.parse(ex.starter[sp], 'py', {}).scripts); });
+      linesBySprite[ex.sprite] = canonicalLines(parsed.scripts, parsed.fnMap);
+      Object.keys(ex.starter).forEach((sp) => { if (sp !== ex.sprite) { const q = parseCode(ex.starter[sp]); linesBySprite[sp] = canonicalLines(q.scripts, q.fnMap); } });
     } catch (e) { /* noop */ }
     let all = true;
     startStage();
@@ -968,13 +1004,13 @@
     list.innerHTML = '';
     lastResults.forEach((r) => { const d = document.createElement('div'); d.textContent = '✓ ' + r.label; d.style.color = '#1F5A32'; list.appendChild(d); });
     const hasNext = exIdx + 1 < lesson.exercises.length;
-    $('.clear .next').textContent = hasNext ? '次の演習へ' : '一覧にもどる';
+    $('.clear .next').textContent = hasNext ? '次の演習へ' : lastLabel();
     el.clear.classList.remove('hidden');
   }
   $('.clear .again').addEventListener('click', () => el.clear.classList.add('hidden'));
   $('.clear .next').addEventListener('click', () => {
     el.clear.classList.add('hidden');
-    if (exIdx + 1 < lesson.exercises.length) openExercise(lesson, exIdx + 1); else renderHome();
+    if (exIdx + 1 < lesson.exercises.length) openExercise(lesson, exIdx + 1); else afterLast();
   });
 
   // ---------------------------------------------------------------

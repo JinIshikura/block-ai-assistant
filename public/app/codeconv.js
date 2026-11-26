@@ -1932,6 +1932,49 @@
     }
   }
 
+  // 学習モード用：スクリプトの上に書いた「def 名前(引数):」（自分で作る命令＝定義ブロック）もいっしょに読む
+  // → {scripts, functions:[{name, params, body}], fnMap:{名前:{params}}, error}
+  function parseWithDefs(text, lang, opts) {
+    const src = String(text || '').split('\n');
+    const rest = src.slice();
+    const blocks = [];
+    const isTop = (l) => l.trim() !== '' && !/^[ \t　]/.test(l);
+    let i = 0;
+    while (i < src.length) {
+      if (/^def[ \t]/.test(src[i])) {
+        let k = i - 1;
+        while (k >= 0 && !src[k].trim()) k--;
+        if (k < 0 || !/^@/.test(src[k].trim())) {
+          let j = i + 1;
+          while (j < src.length && !isTop(src[j])) j++;
+          let e = j;
+          while (e > i + 1 && !src[e - 1].trim()) e--;
+          blocks.push({ start: i + 1, text: src.slice(i, e).join('\n') });
+          for (let t = i; t < j; t++) rest[t] = '';
+          i = j;
+          continue;
+        }
+      }
+      i++;
+    }
+    const fnMap = Object.assign({}, opts && opts.functions);
+    blocks.forEach((b) => {
+      const m = /^def\s+([^\s(]+)\s*\(([^)]*)\)/.exec(b.text);
+      if (m) fnMap[m[1]] = { params: m[2].split(',').map((x) => x.trim()).filter(Boolean) };
+    });
+    const o2 = Object.assign({}, opts || {}, { functions: fnMap });
+    const fns = [];
+    for (const b of blocks) {
+      const r = compileFunction(b.text, o2);
+      if (r.error) return { scripts: [], functions: [], fnMap, error: { line: (r.error.line || 1) + b.start - 1, msg: r.error.msg } };
+      fns.push({ name: r.name, params: r.params, body: r.body });
+    }
+    const p = parse(blocks.length ? rest.join('\n') : text, lang, o2);
+    p.functions = p.error ? [] : fns;
+    p.fnMap = fnMap;
+    return p;
+  }
+
   // 対応表（AIの説明・ヘルプ用）
   function reference(lang) {
     const py = lang === 'py';
@@ -1940,7 +1983,7 @@
     return { commands: rows, reporters: reps };
   }
 
-  const api = { toCode, parse, reference, highlight, compileFunction, builtinFunction, BUILTINS, HATS, COMMANDS, REPORTERS };
+  const api = { toCode, parse, parseWithDefs, reference, highlight, compileFunction, builtinFunction, BUILTINS, HATS, COMMANDS, REPORTERS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.BlockCode = api;
 })(typeof window !== 'undefined' ? window : globalThis);

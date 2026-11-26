@@ -25,19 +25,23 @@ let n = 0;
 const call = async (method, params) => { const id = 'q' + (++n); await handler({ source: global.window, data: { source: 'block-ai-cs', id, method, params } }); const r = replies[id]; if (r.error) throw new Error(r.error); return r.result; };
 const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.exitCode = 1; };
 async function apply(sprite, code) {
-  const p = C.parse(code, 'py', {}); if (p.error) throw new Error(p.error.msg);
+  const p = C.parseWithDefs(code, 'py', {}); if (p.error) throw new Error(p.error.msg);
   const cur = await call('getScripts', { sprite });
-  await call('replaceScripts', { sprite, removeTopIds: cur.scripts.map((s) => s.topId), scripts: p.scripts });
+  if (p.functions.length) {
+    await call('replaceScripts', { sprite, removeTopIds: cur.scripts.map((s) => s.topId), scripts: [] });
+    for (const f of p.functions) await call('defineFunction', { sprite, name: f.name, params: f.params, body: f.body, warp: false });
+    await call('replaceScripts', { sprite, removeTopIds: [], scripts: p.scripts });
+  } else await call('replaceScripts', { sprite, removeTopIds: cur.scripts.map((s) => s.topId), scripts: p.scripts });
   return p;
 }
 async function judge(ex, code) {
-  if (C.parse(code, 'py', {}).error) return [false];
+  if (C.parseWithDefs(code, 'py', {}).error) return [false];
   const ab = sb3.buffer.slice(sb3.byteOffset, sb3.byteOffset + sb3.byteLength);
   await call('loadProject', { sb3: ab });
   for (const sp of Object.keys(ex.starter)) { try { await apply(sp, ex.starter[sp]); } catch (e) { if (!ex.brokenStarter) throw e; } }
   const p = await apply(ex.sprite, code);
-  const lines = { [ex.sprite]: L.canonicalLines(p.scripts) };
-  Object.keys(ex.starter).forEach((sp) => { if (sp !== ex.sprite) lines[sp] = L.canonicalLines(C.parse(ex.starter[sp], 'py', {}).scripts); });
+  const lines = { [ex.sprite]: L.canonicalLines(p.scripts, p.fnMap) };
+  Object.keys(ex.starter).forEach((sp) => { if (sp !== ex.sprite) { const q = C.parseWithDefs(ex.starter[sp], 'py', {}); lines[sp] = L.canonicalLines(q.scripts, q.fnMap); } });
   const out = [];
   for (const c of ex.checks) {
     if (c.type === 'code') out.push(L.checkCode(c, lines).ok);

@@ -43,14 +43,12 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
   for (let i = 0; i < 10 && q('.slide .nx').textContent !== '演習へ'; i++) { q('.slide .nx').click(); await wait(20); }
   ok(q('.slide .nx').textContent === '演習へ', '最後のスライドで「演習へ」');
   q('.slide .nx').click(); await wait(100);
-  // えらぶ問題（2問）
+  // えらぶ問題（1問）
   ok(!q('.qz').classList.contains('hidden') && qa('.qchoices .qch').length === 4 && q('.qch .bv-blk'), 'えらぶ問題が出る（選択肢はブロック）');
   qa('.qchoices .qch')[1].click(); await wait(20);
   ok(q('.qfb').classList.contains('ng') && q('.qnext').classList.contains('hidden'), 'まちがえると理由が出て、先へは進めない');
   qa('.qchoices .qch')[0].click(); await wait(20);
   ok(q('.qfb').classList.contains('ok') && !q('.qnext').classList.contains('hidden'), '正解すると「次へ」が出る');
-  q('.qnext').click(); await wait(50);
-  qa('.qchoices .qch')[1].click(); await wait(20);
   q('.qnext').click(); await wait(400);
   ok(qa('.uses .ui').length >= 2 && q('.uses .bv-blk') && /move/.test(q('.uses').textContent), '左に「この課題で使うコード」がブロックつきで出る');
   const lp = sent.find((m) => m.method === 'loadProject');
@@ -70,13 +68,22 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
   ok(!q('.over.clear').classList.contains('hidden'), '直して判定するとクリア');
   { const bad = [...root.querySelectorAll('button')].filter((b) => !b.classList.contains('qch') && !b.classList.contains('pill') && !b.classList.contains('askok') && /答え/.test(b.textContent)).map((b) => b.className + ':' + b.textContent); ok(bad.length === 0, '「答えを見る」はない ' + bad.join(',')); }
   q('.clear .next').click(); await wait(400);
-  ok(/待ってから回ろう/.test(q('.ex-title').textContent), '次の演習へ進む');
+  ok(/反対向きに動かそう/.test(q('.ex-title').textContent), '次の演習へ進む');
   // ヒント
   q('.hintb').click(); q('.hintb').click(); await wait(20);
   ok(qa('.hint').length === 2, 'ヒントを順に表示');
   // ブロックで確かめる
   q('.eb.peek').click(); await wait(100);
   ok(sent.some((m) => m.kind === 'peek'), '「ブロックで確かめる」でScratchの画面を見せる');
+  // 順番に解放（生徒のとき）
+  { const A = w.BlockAuth; const u0 = A.user; A.user = () => ({ role: 'student', id: 'sim01' });
+    q('.go-home').click(); await wait(50);
+    const cards = qa('.home .lesson');
+    ok(!cards[0].classList.contains('locked') && cards[1].classList.contains('locked') && cards[1].querySelector('.pill').disabled, '生徒は、前のレッスンをクリアするまで次のレッスンが開かない');
+    ok(qa('.home .lesson.dojo').length >= 3 && /道場/.test(qa('.home .lesson.dojo')[0].textContent), '道場は色と札で区別される');
+    A.user = u0; q('.go-home').click(); await wait(50);
+    ok(!qa('.home .lesson')[1].classList.contains('locked'), '先生・ログインなしでは全部開いている');
+  }
   // やめる
   q('.quit').click(); q('.confirm .yes').click(); await wait(30);
   ok(sent.some((m) => m.kind === 'closeTab'), '「学習をやめる」でタブを閉じる合図');

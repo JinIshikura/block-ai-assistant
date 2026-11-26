@@ -327,7 +327,7 @@
       const th = document.createElement('th');
       th.className = 'step'; th.colSpan = st.lessons.length; th.textContent = st.title;
       head1.appendChild(th);
-      st.lessons.forEach((l) => { lessons.push(l); const t2 = document.createElement('th'); t2.textContent = l.title.replace(/^(第\d+回|ステップ\d)[\s　]*/, '$1').replace(/まとめテスト$/, 'まとめ').slice(0, 6); t2.title = l.title; head2.appendChild(t2); });
+      st.lessons.forEach((l) => { lessons.push(l); const t2 = document.createElement('th'); t2.textContent = l.title.replace(/^レッスン(\d+)[\s　].*/, 'L$1').replace(/^(道場\d+)[\s　].*/, '$1').replace(/^卒業道場.*/, '卒業').replace(/^(第\d+回|ステップ\d)[\s　]*/, '$1').replace(/まとめテスト$/, 'まとめ').slice(0, 6); t2.title = l.title; head2.appendChild(t2); });
     });
     head1.insertAdjacentHTML('beforeend', '<th rowspan="2">合計</th><th rowspan="2">最後に学習</th>');
     tb.append(head1, head2);

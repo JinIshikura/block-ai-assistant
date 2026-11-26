@@ -381,7 +381,7 @@
       if (opt.lint === false || lang() !== 'py' || !BC || !BC.parse) return;
       lintTimer = setTimeout(() => {
         try {
-          const r = BC.parse(ta.value, 'py', opt.parseOpts ? opt.parseOpts() : {});
+          const r = (opt.defs && BC.parseWithDefs ? BC.parseWithDefs : BC.parse)(ta.value, 'py', opt.parseOpts ? opt.parseOpts() : {});
           lintMsg = r && r.error ? r.error.line + '行目：' + r.error.msg : null;
           if (opt.onLint) opt.onLint(r && r.error ? r.error : null);
         } catch (e) { lintMsg = null; }
