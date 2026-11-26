@@ -2,8 +2,13 @@
 // Scratchのエディタ内部（VM・ブロック画面）にアクセスして、
 // 作品の読み取り・ブロックの追加/修正・印つけ・元にもどす を行う。
 // 拡張機能のUI（content.js）とは window.postMessage でやり取りする。
+// 拡張機能に入っている版は、まずサーバーの最新版（/bridge/page-bridge.js）を読みこんで動かす。
+// 読みこめないときだけ、手元（拡張機能の中）の版で動く。→ この部分の更新に、拡張機能の入れ直しがいらない
 (function () {
   'use strict';
+  const REMOTE = 'https://block-ai-assistant.pages.dev/bridge/page-bridge.js';
+
+  function start() {
   if (window.__blockAiBridge) return;
   window.__blockAiBridge = true;
 
@@ -2150,4 +2155,18 @@
     }
     window.postMessage(reply, location.origin);
   });
+  }
+
+  const me = typeof document !== 'undefined' ? document.currentScript : null;
+  if ((me && me.src && me.src.indexOf(REMOTE) === 0) || typeof document === 'undefined' || typeof document.createElement !== 'function') { start(); return; }
+  let done = false;
+  const local = () => { if (done) return; done = true; start(); };
+  try {
+    const s = document.createElement('script');
+    s.src = REMOTE + '?h=' + Math.floor(Date.now() / 600000);
+    s.onload = () => { if (window.__blockAiBridge) done = true; else local(); };
+    s.onerror = local;
+    setTimeout(local, 5000);
+    (document.head || document.documentElement).appendChild(s);
+  } catch (e) { local(); }
 })();

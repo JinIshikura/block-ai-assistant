@@ -542,7 +542,7 @@
     fails = 0;
     hintsShown = 0;
     show('ex');
-    el.crumb.textContent = ls.title + '　›　演習' + (i + 1);
+    el.crumb.textContent = ls.title + '　›　問題 ' + (i + 1) + ' / ' + ls.exercises.length;
     el.crumb2.textContent = ls.title + '　›　問題 ' + (i + 1) + ' / ' + ls.exercises.length;
     el.exTitle.textContent = ex.title;
     el.goals.innerHTML = '<b>目標</b>';
@@ -601,7 +601,7 @@
   // えらぶ問題
   function openQuiz(ls, i) {
     show('qz');
-    el.crumb.textContent = ls.title + '　›　演習' + (i + 1);
+    el.crumb.textContent = ls.title + '　›　問題 ' + (i + 1) + ' / ' + ls.exercises.length;
     $('.qcrumb').textContent = ls.title + '　›　問題 ' + (i + 1) + ' / ' + ls.exercises.length;
     $('.qtitle').textContent = ex.title;
     $('.qtext').textContent = ex.question || '';

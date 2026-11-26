@@ -22,3 +22,7 @@
 
 /portal/*
   Cache-Control: no-cache
+
+/bridge/*
+  Cache-Control: no-cache
+  Access-Control-Allow-Origin: https://scratch.mit.edu
