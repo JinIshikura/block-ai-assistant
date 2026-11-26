@@ -562,7 +562,16 @@
     errLine = 0;
     paint();
     if (assist) assist.refresh();
+    toTop();
     await prepare();
+    toTop();
+  }
+  // 新しい課題を開いたら、左の目標の欄などをいちばん上から見せる
+  function toTop() {
+    ['.task', '.judge', '.ex', '.qz', '.slides', '.slide .scroll'].forEach((sel) => { const e = el.root.querySelector(sel); if (e) e.scrollTop = 0; });
+    el.ta.scrollTop = 0; el.ta.scrollLeft = 0;
+    try { el.ta.setSelectionRange(0, 0); } catch (e) { /* noop */ }
+    if (el.hl) el.hl.scrollTop = 0;
   }
 
   // 英語の名前が、どのスライドで初めて出てくるか
@@ -600,7 +609,7 @@
 
   // えらぶ問題
   function openQuiz(ls, i) {
-    show('qz');
+    show('qz'); toTop();
     el.crumb.textContent = ls.title + '　›　問題 ' + (i + 1) + ' / ' + ls.exercises.length;
     $('.qcrumb').textContent = ls.title + '　›　問題 ' + (i + 1) + ' / ' + ls.exercises.length;
     $('.qtitle').textContent = ex.title;
