@@ -93,7 +93,7 @@
         if (n.v === 'True') return boo('ほんとう', 'operator');
         if (n.v === 'False') return boo('うそ', 'operator');
         if (n.v === 'answer') return rep('答え', 'sensing');
-        return rep(esc(n.v), 'variable');
+        return rep(esc(n.v), PARAMS.has(n.v) ? 'myblock' : 'variable');
       case 'not': return boo(ex(n.a, true) + ' ではない', 'operator');
       case 'index': return rep(ex(n.l) + ' の ' + (n.i.t === 'num' ? val(Number(n.i.v) + 1) : ex(n.i) + ' + 1') + ' 番目', 'list');
       case 'bin': {
@@ -169,6 +169,10 @@
   function lineRow(line) {
     const m = /^(\s*)(.*?)\s*$/.exec(line);
     const ind = Math.floor(m[1].replace(/\t/g, '    ').length / 4);
+    if (ind === 0 && m[2]) {
+      const dm = /^def\s+([\p{L}_][\p{L}\p{N}_]*)\s*\(([^)]*)\)/u.exec(m[2]);
+      PARAMS = new Set(dm && !/^script\d*$/.test(dm[1]) ? dm[2].split(',').map((x) => x.trim()).filter(Boolean) : []);
+    }
     let s = m[2];
     const cm = /^#\s?(.*)$/.exec(s);
     if (!s) return { indent: ind, kind: 'blank', html: '' };
@@ -199,6 +203,11 @@
     if ((mm = /^if\s+(.+):$/.exec(s))) return { indent: ind, kind: 'c', cat: 'control', html: 'もし ' + ex(parseExpr(mm[1]), true) + ' なら' };
     if ((mm = /^elif\s+(.+):$/.exec(s))) return { indent: ind, kind: 'c', cat: 'control', html: 'でなければ／もし ' + ex(parseExpr(mm[1]), true) + ' なら' };
     if (s === 'else:') return { indent: ind, kind: 'else', cat: 'control', html: 'でなければ' };
+    if ((mm = /^([\p{L}_][\p{L}\p{N}_]*)\s*([+-])=\s*(.+)$/u.exec(s))) {
+      const e = parseExpr(mm[3]);
+      const d = mm[2] === '+' ? ex(e) : (e && e.t === 'num' ? val('-' + esc(e.v)) : rep(val('0') + ' − ' + ex(e), 'operator'));
+      return { indent: ind, kind: 'stmt', cat: 'variable', html: rep(esc(mm[1]), 'variable') + ' を ' + d + ' ずつ変える' };
+    }
     if ((mm = /^([\p{L}_][\p{L}\p{N}_]*)\.append\((.*)\)$/u.exec(s))) return { indent: ind, kind: 'stmt', cat: 'list', html: ex(parseExpr(mm[2])) + ' を ' + rep(esc(mm[1]), 'list') + ' に追加する' };
     if ((mm = /^([\p{L}_][\p{L}\p{N}_]*)\s*=(?!=)\s*(.+)$/u.exec(s))) {
       const name = mm[1];
@@ -226,8 +235,10 @@
   }
   // そのコードの中で def した名前（自分で作った命令）
   let DEFINED = new Set();
+  let PARAMS = new Set();
   function scanDefs(code) {
     DEFINED = new Set();
+    PARAMS = new Set();
     String(code || '').split('\n').forEach((l) => { const m = /^def\s+([\p{L}_][\p{L}\p{N}_]*)\s*\(/u.exec(l); if (m && !/^script\d*$/.test(m[1])) DEFINED.add(m[1]); });
   }
 

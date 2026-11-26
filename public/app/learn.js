@@ -428,7 +428,7 @@
           b.disabled = locked;
           const no = document.createElement('span');
           no.className = 'no';
-          no.textContent = (cleared.has(e.id) ? '✓ ' : '') + (e.type === 'quiz' ? 'えらぶ' : '演習' + (i + 1));
+          no.textContent = (cleared.has(e.id) ? '✓ ' : '') + (e.type === 'quiz' ? 'えらぶ' : '演習' + ls.exercises.slice(0, i + 1).filter((x) => x.type !== 'quiz').length);
           if (e.type === 'quiz') no.style.background = cleared.has(e.id) ? '' : '#FFF1CC';
           const tt = document.createElement('span');
           tt.textContent = e.title;
@@ -543,7 +543,7 @@
     hintsShown = 0;
     show('ex');
     el.crumb.textContent = ls.title + '　›　演習' + (i + 1);
-    el.crumb2.textContent = ls.title + '　›　演習 ' + (i + 1) + ' / ' + ls.exercises.length;
+    el.crumb2.textContent = ls.title + '　›　問題 ' + (i + 1) + ' / ' + ls.exercises.length;
     el.exTitle.textContent = ex.title;
     el.goals.innerHTML = '<b>目標</b>';
     ex.goals.forEach((g, k) => { const s = document.createElement('span'); s.textContent = (k + 1) + '. ' + g; el.goals.appendChild(s); });
@@ -602,7 +602,7 @@
   function openQuiz(ls, i) {
     show('qz');
     el.crumb.textContent = ls.title + '　›　演習' + (i + 1);
-    $('.qcrumb').textContent = ls.title + '　›　演習 ' + (i + 1) + ' / ' + ls.exercises.length;
+    $('.qcrumb').textContent = ls.title + '　›　問題 ' + (i + 1) + ' / ' + ls.exercises.length;
     $('.qtitle').textContent = ex.title;
     $('.qtext').textContent = ex.question || '';
     const B = window.BlockView;
