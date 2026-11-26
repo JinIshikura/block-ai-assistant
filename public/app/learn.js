@@ -216,6 +216,28 @@
   .qch .qk { flex: none; width: 26px; height: 26px; border-radius: 50%; background: #EEF0F3; color: #374151; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
   .qch.ok { border-color: #2E7D46; background: #E3F3E8; }
   .qch.ng { border-color: #E5484D; background: #FDE7DD; }
+  /* 動きでの反応（「視差効果を減らす」設定のPCでは動かさない） */
+  @media (prefers-reduced-motion: no-preference) {
+    .qch.ok { animation: bai-pop .45s cubic-bezier(.2,1.4,.4,1); }
+    .qch.ng { animation: bai-shake .4s ease; }
+    .over.clear:not(.hidden) .box { animation: bai-in .35s cubic-bezier(.2,1.3,.4,1); }
+    .over.clear:not(.hidden) h1 { animation: bai-bounce .7s .1s cubic-bezier(.2,1.6,.4,1) both; }
+    .clear-list > div { animation: bai-up .3s ease both; }
+    .clear-list > div:nth-child(2) { animation-delay: .08s; } .clear-list > div:nth-child(3) { animation-delay: .16s; } .clear-list > div:nth-child(n+4) { animation-delay: .24s; }
+    .clear-big { animation: bai-pop .6s .25s cubic-bezier(.2,1.5,.4,1) both; }
+    .results .res { animation: bai-up .25s ease both; }
+    .results .res.ng .ic { animation: bai-shake .4s ease; }
+    .pill.next .nexttag { animation: bai-beat 1.6s ease-in-out infinite; }
+    .pill.done.justdone { animation: bai-pop .5s cubic-bezier(.2,1.5,.4,1); }
+    .bai-confetti { position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 2px; pointer-events: none; z-index: 7; animation: bai-fall var(--d) var(--w) cubic-bezier(.3,.6,.5,1) forwards; }
+  }
+  @keyframes bai-pop { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+  @keyframes bai-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+  @keyframes bai-in { from { transform: scale(.85) translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes bai-bounce { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+  @keyframes bai-up { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes bai-beat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  @keyframes bai-fall { 0% { transform: translate(0, 0) rotate(0); opacity: 1; } 100% { transform: translate(var(--x), 105vh) rotate(var(--r)); opacity: .9; } }
   .qch .qc { font-family: "BIZ UDGothic", Consolas, Menlo, monospace; background: #1E1F23; color: #E6E6E6; border-radius: 6px; padding: 4px 10px; white-space: pre; }
   .qfb { border-radius: 10px; padding: 10px 14px; font-size: 15px; line-height: 1.7; white-space: pre-wrap; }
   .qfb.ok { background: #E3F3E8; color: #1F5A32; }
@@ -398,6 +420,24 @@
     }
     return { play, get on() { return on; }, set on(v) { on = !!v; try { localStorage.setItem('bai.sound', on ? 'on' : 'off'); } catch (e) { /* noop */ } } };
   })();
+
+  // 紙ふぶき（レッスンを全部クリアしたとき）
+  function confetti(n) {
+    try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (e) { /* noop */ }
+    const colors = ['#7C4FD0', '#FFBF00', '#4C97FF', '#59C059', '#FF6680', '#FF8C1A'];
+    for (let k = 0; k < (n || 60); k++) {
+      const d = document.createElement('div');
+      d.className = 'bai-confetti';
+      d.style.left = (Math.random() * 100) + '%';
+      d.style.background = colors[k % colors.length];
+      d.style.setProperty('--x', ((Math.random() - 0.5) * 240) + 'px');
+      d.style.setProperty('--r', ((Math.random() - 0.5) * 1080) + 'deg');
+      d.style.setProperty('--d', (1.6 + Math.random() * 1.4) + 's');
+      d.style.setProperty('--w', (Math.random() * 0.4) + 's');
+      el.root.appendChild(d);
+      setTimeout(() => d.remove(), 3800);
+    }
+  }
 
   // 書きかけのコードを、この端末に残す（生徒ごと・課題ごと）。タブを閉じても続きから書ける
   const draftKey = (id) => { const u = window.BlockAuth && window.BlockAuth.user(); return 'bai.draft.' + ((u && u.id) || 'guest') + '.' + id; };
@@ -736,7 +776,9 @@
         tried++;
         if (k === ex.answer) {
           b.classList.add('ok');
-          sfx.play(lesson.exercises.every((e) => e.id === ex.id || cleared.has(e.id)) ? 'lesson' : 'ok');
+          const lastOne = lesson.exercises.every((e) => e.id === ex.id || cleared.has(e.id));
+          sfx.play(lastOne ? 'lesson' : 'ok');
+          if (lastOne) confetti(70);
           fb.className = 'qfb ok';
           fb.textContent = '正解！　' + (ex.explain || '');
           $('.qnext').classList.remove('hidden');
@@ -1105,6 +1147,7 @@
       cleared.add(ex.id);
       sfx.play(lessonDone(lesson) ? 'lesson' : 'clear');
       showClear();
+      if (lessonDone(lesson)) confetti(70);
     } else {
       fails++;
       sfx.play('ng');
