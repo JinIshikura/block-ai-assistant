@@ -73,6 +73,10 @@
   .lesson.dojo { background: #FFF8E6; border: 1.5px solid #E9C46A; }
   .lesson .badge { display: inline-block; margin-right: 8px; font-size: 13px; font-weight: 700; border-radius: 6px; padding: 2px 8px; background: #F6D78B; color: #5C3D00; vertical-align: 2px; }
   .lesson.locked { background: #F1F3F6; }
+  .pill.next { border: 2.5px solid #7C4FD0; background: #F6F1FF; }
+  .pill .nexttag { flex: none; margin-left: auto; font-size: 12px; font-weight: 700; color: #fff; background: #7C4FD0; border-radius: 999px; padding: 2px 9px; }
+  .resume { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: #F6F1FF; border: 1.5px solid #C9B8EF; border-radius: 12px; padding: 12px 16px; margin: 6px auto 0; max-width: 900px; font-size: 15px; }
+  .resume button { border: 0; background: #7C4FD0; color: #fff; font-weight: 700; border-radius: 10px; padding: 9px 18px; min-height: 42px; cursor: pointer; font-size: 15px; }
   .lesson.locked .lt { color: #4B5563; }
   .lesson .lockmsg { font-size: 14px; color: #4B5563; }
   .pill:disabled { cursor: not-allowed; background: #F1F3F6; color: #6B7280; border-color: #D5DAE1; }
@@ -360,6 +364,11 @@
     if (nx && lessonDone(lesson) && !isLocked(nx)) openSlides(nx, 0); else renderHome();
   }
   const lastLabel = () => { const nx = nextLesson(lesson); return nx && lessonDone(lesson) ? '次のレッスンへ' : '一覧にもどる'; };
+  // 書きかけのコードを、この端末に残す（生徒ごと・課題ごと）。タブを閉じても続きから書ける
+  const draftKey = (id) => { const u = window.BlockAuth && window.BlockAuth.user(); return 'bai.draft.' + ((u && u.id) || 'guest') + '.' + id; };
+  const loadDraft = (id) => { try { return localStorage.getItem(draftKey(id)); } catch (e) { return null; } };
+  const saveDraft = (id, code, starter) => { try { if (code === starter) localStorage.removeItem(draftKey(id)); else localStorage.setItem(draftKey(id), code); } catch (e) { /* noop */ } };
+  let draftTimer = 0;
   function record(ok) { if (isStudent() && ex) authApi({ action: 'record', ex: ex.id, ok: !!ok }); }
   const projectCache = {};
 
@@ -384,6 +393,15 @@
   // ---------------------------------------------------------------
   // 一覧
   // ---------------------------------------------------------------
+  // つぎにやる問題：まだクリアしていない、開いている問題のうち、いちばん前のもの
+  function nextTarget() {
+    for (const ls of allLessons()) {
+      if (isLocked(ls)) return null;
+      const i = ls.exercises.findIndex((e) => !cleared.has(e.id));
+      if (i >= 0) return { ls, i };
+    }
+    return null;
+  }
   function renderHome() {
     show('home');
     el.crumb.textContent = '';
@@ -391,6 +409,16 @@
     const nav = document.createElement('div');
     nav.className = 'stepnav';
     el.home.appendChild(nav);
+    const nt = cleared.size ? nextTarget() : null;
+    if (nt) {
+      const bar = document.createElement('div');
+      bar.className = 'resume';
+      bar.innerHTML = '<span></span><button type="button">続きから始める</button>';
+      bar.querySelector('span').textContent = 'つぎは「' + nt.ls.title + '」の「' + nt.ls.exercises[nt.i].title + '」';
+      bar.querySelector('button').addEventListener('click', () => openExercise(nt.ls, nt.i));
+      el.home.appendChild(bar);
+    }
+    let nextPill = null;
     course.steps.forEach((st, si) => {
       const h = document.createElement('h2');
       h.textContent = st.title;
@@ -433,12 +461,22 @@
           const tt = document.createElement('span');
           tt.textContent = e.title;
           b.append(no, tt);
+          if (nt && nt.ls === ls && nt.i === i) { b.classList.add('next'); b.insertAdjacentHTML('beforeend', '<span class="nexttag">つぎはここ</span>'); nextPill = c; }
           b.addEventListener('click', () => openExercise(ls, i));
           row.appendChild(b);
         });
         el.home.appendChild(c);
       });
     });
+    scrollToNext();
+  }
+
+  // 一覧を開いたら、「つぎはここ」のレッスンが見えるところまで動かす
+  function scrollToNext() {
+    const c = el.home.querySelector('.pill.next');
+    const card = c && c.closest('.lesson');
+    // 最初の画面に見えているときは動かさない（「続きから」の帯が見えるように）
+    if (card && card.offsetTop + Math.min(card.offsetHeight, 300) > el.home.clientHeight) el.home.scrollTop = Math.max(0, card.offsetTop - 80);
   }
 
   // ---------------------------------------------------------------
@@ -558,13 +596,37 @@
     el.aiReply.classList.add('hidden');
     el.aiReply.textContent = '';
     updateAi();
-    el.ta.value = ex.starter[ex.sprite] || '';
+    const starter = ex.starter[ex.sprite] || '';
+    const draft = loadDraft(ex.id);
+    el.ta.value = draft !== null ? draft : starter;
     errLine = 0;
     paint();
     if (assist) assist.refresh();
     toTop();
+    caretToTodo();
     await prepare();
+    if (draft !== null && draft !== starter && ex && !el.results.textContent.trim()) el.results.innerHTML = '<div class="jnote">前に書いたコードの続きから始めます。最初からやり直すときは「最初の状態にもどす」。</div>';
     toTop();
+    caretToTodo();
+  }
+  // 「# ここに〜」のメモがあれば、その行にカーソルを置く（すぐ書き始められるように）
+  function goLine(n) {
+    const ls = el.ta.value.split('\n');
+    let pos = 0;
+    for (let k = 0; k < n - 1 && k < ls.length; k++) pos += ls[k].length + 1;
+    try { el.ta.focus({ preventScroll: true }); el.ta.setSelectionRange(pos + (ls[n - 1] || '').length, pos + (ls[n - 1] || '').length); } catch (e) { /* noop */ }
+    const lh = parseFloat(getComputedStyle(el.ta).lineHeight) || 28;
+    const want = (n - 1) * lh;
+    if (want < el.ta.scrollTop || want > el.ta.scrollTop + el.ta.clientHeight - lh * 2) el.ta.scrollTop = Math.max(0, want - el.ta.clientHeight / 3);
+    if (el.hl) el.hl.scrollTop = el.ta.scrollTop;
+  }
+  function caretToTodo() {
+    const v = el.ta.value;
+    // 「# ここに〜」の1行は、選んだ状態にする（そのまま書くとメモと入れかわる）
+    const m = /^([ \t]*)(#\s*ここ.*)$/m.exec(v);
+    if (!m) return;
+    const a = m.index + m[1].length;
+    try { el.ta.focus({ preventScroll: true }); el.ta.setSelectionRange(a, a + m[2].length); } catch (e) { /* noop */ }
   }
   // 新しい課題を開いたら、左の目標の欄などをいちばん上から見せる
   function toTop() {
@@ -655,6 +717,13 @@
       chs.appendChild(b);
     });
   }
+  // Enter キーで「次へ」（えらぶ問題で正解したあと・クリアの画面）
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.isComposing || el.root.classList.contains('hidden')) return;
+    if (!el.clear.classList.contains('hidden')) { e.preventDefault(); $('.clear .next').click(); return; }
+    const qn = $('.qnext');
+    if (!$('.qz').classList.contains('hidden') && !qn.classList.contains('hidden')) { e.preventDefault(); qn.click(); }
+  });
   $('.qnext').addEventListener('click', () => { if (exIdx + 1 < lesson.exercises.length) openExercise(lesson, exIdx + 1); else afterLast(); });
   $('.qslides').addEventListener('click', () => openSlides(lesson, 0));
 
@@ -759,7 +828,7 @@
     el.hl.scrollLeft = el.ta.scrollLeft;
     el.gutter.scrollTop = el.ta.scrollTop;
   }
-  el.ta.addEventListener('input', () => { errLine = 0; paint(); });
+  el.ta.addEventListener('input', () => { errLine = 0; paint(); clearTimeout(draftTimer); const id = ex && ex.id, st = ex && (ex.starter[ex.sprite] || ''); draftTimer = setTimeout(() => { if (id) saveDraft(id, el.ta.value, st); }, 600); });
   el.ta.addEventListener('scroll', syncScroll);
   // 入力サポート（入力候補・かっこ・字下げ・全角の直し・案内バー）
   const assist = window.EditorAssist ? window.EditorAssist.attach({ ta: el.ta, wrap: el.ta.parentNode, barAfter: $('.editor'), lang: () => 'py', defs: true }) : null;
@@ -776,16 +845,16 @@
     el.hintBtn.disabled = hintsShown >= ex.hints.length;
   });
   $('.re-slides').addEventListener('click', () => openSlides(lesson, 0));
-  $('.reset').addEventListener('click', () => { if (!busy && ex) { el.ta.value = ex.starter[ex.sprite] || ''; paint(); el.results.innerHTML = ''; prepare(); } });
+  $('.reset').addEventListener('click', () => { if (!busy && ex) { el.ta.value = ex.starter[ex.sprite] || ''; saveDraft(ex.id, el.ta.value, el.ta.value); errLine = 0; paint(); el.results.innerHTML = ''; caretToTodo(); prepare(); } });
 
   function showCodeError(e) {
-    if (e.line) { errLine = e.line; paint(); }
+    if (e.line) { errLine = e.line; paint(); goLine(e.line); }
     el.results.innerHTML = '';
     addResult(false, 'コードを読みこめなかった', e.message);
   }
   $('.eb.go').addEventListener('click', async () => {
     if (busy || !ex) return;
-    try { await applyCode(ex.sprite, el.ta.value); await bridge('greenFlag'); startStage(); } catch (e) { showCodeError(e); }
+    try { await applyCode(ex.sprite, el.ta.value); await bridge('greenFlag'); startStage(); if (/key_pressed/.test(el.ta.value)) stageFocus.focus({ preventScroll: true }); } catch (e) { showCodeError(e); }
   });
   $('.eb.stop').addEventListener('click', () => { bridge('stopAll').catch(() => {}); });
   $('.eb.peek').addEventListener('click', async () => {
@@ -947,7 +1016,7 @@
       parsed = await applyCode(ex.sprite, el.ta.value);
     } catch (e) {
       addResult(false, 'コードを読みこめなかった', e.message);
-      if (e.line) { errLine = e.line; paint(); }
+      if (e.line) { errLine = e.line; paint(); goLine(e.line); }
       lastResults.push({ ok: false, label: 'コードを読みこめなかった', why: e.message });
       return finish(false);
     }
@@ -1013,6 +1082,17 @@
     list.innerHTML = '';
     lastResults.forEach((r) => { const d = document.createElement('div'); d.textContent = '✓ ' + r.label; d.style.color = '#1F5A32'; list.appendChild(d); });
     const hasNext = exIdx + 1 < lesson.exercises.length;
+    const lessonClear = lessonDone(lesson) && lesson.exercises.indexOf(ex) >= 0;
+    const nxL = nextLesson(lesson);
+    const big = el.clear.querySelector('.clear-big');
+    if (big) big.remove();
+    if (lessonClear) {
+      const d = document.createElement('div');
+      d.className = 'clear-big';
+      d.style.cssText = 'background:#FFF3C4;border:1.5px solid #E9C46A;color:#5C3D00;border-radius:10px;padding:10px 14px;font-weight:700;text-align:center';
+      d.textContent = '🎉 ' + lesson.title + ' をぜんぶクリア！' + (nxL ? '　次のレッスンが開きました。' : '　コースをすべてクリアしました！');
+      $('.clear-list').before(d);
+    }
     $('.clear .next').textContent = hasNext ? '次の演習へ' : lastLabel();
     el.clear.classList.remove('hidden');
   }

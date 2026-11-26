@@ -75,6 +75,17 @@ const ok = (c, l) => { console.log((c ? 'OK  ' : 'NG  ') + l); if (!c) process.e
   // ブロックで確かめる
   q('.eb.peek').click(); await wait(100);
   ok(sent.some((m) => m.kind === 'peek'), '「ブロックで確かめる」でScratchの画面を見せる');
+  // 書きかけのコードが残る
+  { const ta2 = q('textarea.code'); ta2.value = ta2.value + '\n    # メモ'; ta2.dispatchEvent(new w.Event('input')); await wait(800);
+    q('.go-home').click(); await wait(50);
+    qa('.home .pill').find((b) => /反対向きに動かそう/.test(b.textContent)).click(); await wait(400);
+    ok(/# メモ/.test(q('textarea.code').value) && /前に書いたコードの続き/.test(q('.results').textContent), '書きかけのコードが、もう一度開いたときに残っている');
+    q('.reset').click(); await wait(300);
+    ok(!/# メモ/.test(q('textarea.code').value), '「最初の状態にもどす」で最初のコードにもどる');
+  }
+  // 「つぎはここ」と「続きから」
+  { q('.go-home').click(); await wait(50);
+    ok(q('.resume') && /反対向きに動かそう/.test(q('.resume').textContent) && q('.pill.next .nexttag'), '一覧に「続きから」と「つぎはここ」が出る'); }
   // 順番に解放（生徒のとき）
   { const A = w.BlockAuth; const u0 = A.user; A.user = () => ({ role: 'student', id: 'sim01' });
     q('.go-home').click(); await wait(50);
